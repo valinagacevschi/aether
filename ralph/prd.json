@@ -126,8 +126,8 @@
         "Typecheck passes"
       ],
       "priority": 9,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Added implementations/python-sdk scaffold with pyproject.toml, aether package, __init__.py, and async Client stub in client.py."
     },
     {
       "id": "JD-010",
@@ -139,8 +139,8 @@
         "Typecheck passes"
       ],
       "priority": 10,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Added implementations/typescript-sdk scaffold with package.json, tsconfig.json, and src/client.ts stub (connect/publish)."
     },
     {
       "id": "JD-011",
@@ -153,8 +153,8 @@
         "Typecheck passes"
       ],
       "priority": 11,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Added test_vectors.py conformance runner to validate event_id/signatures and reject invalid vectors (including kind range)."
     },
     {
       "id": "JD-012",
