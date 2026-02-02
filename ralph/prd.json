@@ -54,8 +54,8 @@
         "Typecheck passes"
       ],
       "priority": 4,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Added spec/test-vectors/invalid-events.yaml with three invalid cases (bad signature, mismatched event_id, out-of-range kind)."
     },
     {
       "id": "JD-005",
