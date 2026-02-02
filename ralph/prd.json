@@ -40,8 +40,8 @@
         "Typecheck passes"
       ],
       "priority": 3,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Added spec/test-vectors/valid-events.yaml with three valid events (empty tags, UTF-8 content)."
     },
     {
       "id": "JD-004",

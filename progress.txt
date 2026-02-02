@@ -1,2 +1,3 @@
 2026-02-02: Completed JD-001 by adding spec/protocol.md (sections for Event Structure, Event Kinds, Tag Filtering, Transport, Validation + field limits). pnpm typecheck and pnpm test failed: no package.json in repo root.
 2026-02-02: Completed JD-002 by adding spec/schema.fbs (FlatBuffers Event/Tag with fixed-size byte vectors). pnpm typecheck/test failed: no package.json in repo root. Next: JD-003 valid vectors.
+2026-02-02: Completed JD-003 by adding spec/test-vectors/valid-events.yaml with 3 valid events (empty tags, UTF-8 content). pnpm typecheck/test failed: no package.json in repo root.

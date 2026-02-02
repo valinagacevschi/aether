@@ -1,0 +1,23 @@
+# Valid event vectors.
+# content is UTF-8 text; tags are empty (serialized as uint16 count = 0).
+- pubkey: 03a107bff3ce10be1d70dd18e74bc09967e4d6309ba50d5f1ddc8664125531b8
+  created_at: 1700000000000000001
+  kind: 1
+  tags: []
+  content: hello aether
+  event_id: c8ecaa1a92e7918d5732aa109602a11d966dc9cd92a9a1f92f2686ac58edfdc1
+  sig: 6105341b1e069431fee3632553551b1e879ab73a44ca0f0d035cbe9d08ed5b73d4fae094d1abb031971e137acaade81f0df89986e0baa3571f3ae629daf4f802
+- pubkey: 712651f450ba05b63898b99ef5f7ba45632e8e2527f7f715cd671ec4024cc51e
+  created_at: 1700000000000000500
+  kind: 10001
+  tags: []
+  content: replaceable state v1
+  event_id: 29a59607a88490053b3f0a18fa65a114b431957857068ce4acec505ef1d39fcd
+  sig: 701fdf8d78847899e7972e8f52f9f3475c9ee8325bdbf94bf1858908cbcbdd1972c5158cc5e152613e6cb5984a0f691a56257042f488e92345b07f1b4a1f7b0b
+- pubkey: e734ea6c2b6257de72355e472aa05a4c487e6b463c029ed306df2f01b5636b58
+  created_at: 1700000000000000999
+  kind: 30001
+  tags: []
+  content: param d default
+  event_id: 70b1f941b1aed61999272468008dfe39df999045f6a0ff5e711b09b52a671476
+  sig: 08916c1d32e3a7ec7eee2c9c20bad05bedda14a3e037e0bafc32287eaad1cd276a58dc1aa83c251435d75656997363abdbbe30df10215cb2afe6432d37146903
