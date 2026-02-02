@@ -13,9 +13,17 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "echo 'no tests yet'"
+    "test": "pnpm run build && node --test"
+  },
+  "dependencies": {
+    "@noble/ed25519": "^2.1.0",
+    "bech32": "^2.0.0",
+    "blake3": "^2.1.5",
+    "ws": "^8.16.0"
   },
   "devDependencies": {
+    "@types/ws": "^8.5.10",
+    "@types/node": "^20.11.25",
     "typescript": "^5.3.3"
   }
 }

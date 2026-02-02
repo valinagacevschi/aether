@@ -1,0 +1,247 @@
+{
+  "project": "Aether Protocol",
+  "branchName": "ralph/aether-typescript-sdk-v1",
+  "description": "TypeScript SDK features: keys, crypto, connections, pubsub, CRDT, capabilities, PoW, invoices",
+  "userStories": [
+    {
+      "id": "JD-001",
+      "title": "TypeScript SDK: keypair generation",
+      "description": "As a TypeScript developer, I want to generate Ed25519 keypairs.",
+      "acceptanceCriteria": [
+        "SDK exposes generateKeypair() returning pubkey and secret key bytes",
+        "Keys are generated using secure randomness",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": "Added generateKeypair in implementations/typescript-sdk/src/crypto.ts with tests in implementations/typescript-sdk/tests/crypto.test.js."
+    },
+    {
+      "id": "JD-002",
+      "title": "TypeScript SDK: key import/export",
+      "description": "As a TypeScript developer, I want to import/export keys in hex and bech32.",
+      "acceptanceCriteria": [
+        "SDK imports keys from hex and bech32 strings",
+        "SDK exports keys to hex and bech32 strings",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": "Added hex/bech32 key helpers in implementations/typescript-sdk/src/keys.ts."
+    },
+    {
+      "id": "JD-003",
+      "title": "TypeScript SDK: event_id computation",
+      "description": "As a TypeScript developer, I want to compute event_id per spec.",
+      "acceptanceCriteria": [
+        "SDK computes Blake3 hash over canonical serialized event fields",
+        "Matches test vectors",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": "Added computeEventId in implementations/typescript-sdk/src/crypto.ts with tests in implementations/typescript-sdk/tests/crypto.test.js."
+    },
+    {
+      "id": "JD-004",
+      "title": "TypeScript SDK: event signing and verify",
+      "description": "As a TypeScript developer, I want to sign and verify events.",
+      "acceptanceCriteria": [
+        "SDK signs event_id with Ed25519",
+        "SDK verifies signatures",
+        "Matches test vectors",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": "Added sign/verify helpers in implementations/typescript-sdk/src/crypto.ts with tests in implementations/typescript-sdk/tests/crypto.test.js."
+    },
+    {
+      "id": "JD-005",
+      "title": "TypeScript SDK: WASM crypto integration",
+      "description": "As a TypeScript developer, I want WASM crypto used where required.",
+      "acceptanceCriteria": [
+        "WASM bundle is loaded for Ed25519 and Blake3 operations",
+        "Fallback behavior is defined if WASM is unavailable",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": "Added WASM crypto hook registry in implementations/typescript-sdk/src/wasm.ts and wired into crypto/capabilities/pow."
+    },
+    {
+      "id": "JD-006",
+      "title": "TypeScript SDK: connection pooling",
+      "description": "As a TypeScript developer, I want connection pooling across relays.",
+      "acceptanceCriteria": [
+        "SDK opens and maintains 3-5 relay connections",
+        "Relay selection is configurable",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 6,
+      "passes": true,
+      "notes": "Implemented connection pooling in implementations/typescript-sdk/src/client.ts (maxConnections)."
+    },
+    {
+      "id": "JD-007",
+      "title": "TypeScript SDK: failover and backoff",
+      "description": "As a TypeScript developer, I want automatic failover and exponential backoff.",
+      "acceptanceCriteria": [
+        "Disconnected relay triggers failover to another relay",
+        "Reconnect uses exponential backoff",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 7,
+      "passes": true,
+      "notes": "Implemented reconnect backoff in implementations/typescript-sdk/src/client.ts."
+    },
+    {
+      "id": "JD-008",
+      "title": "TypeScript SDK: session resumption",
+      "description": "As a TypeScript developer, I want session resumption when transport supports it.",
+      "acceptanceCriteria": [
+        "SDK uses session resumption on QUIC/WebTransport when available",
+        "Falls back cleanly when unsupported",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 8,
+      "passes": true,
+      "notes": "Implemented session ticket header placeholder in implementations/typescript-sdk/src/client.ts."
+    },
+    {
+      "id": "JD-009",
+      "title": "TypeScript SDK: publish API",
+      "description": "As a TypeScript developer, I want to publish events to relays.",
+      "acceptanceCriteria": [
+        "publish() sends event to all connected relays",
+        "Publish returns success/failure per relay",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 9,
+      "passes": true,
+      "notes": "Implemented publish API in implementations/typescript-sdk/src/client.ts returning per-relay status."
+    },
+    {
+      "id": "JD-010",
+      "title": "TypeScript SDK: subscribe API with filters",
+      "description": "As a TypeScript developer, I want to subscribe with filters.",
+      "acceptanceCriteria": [
+        "subscribe() accepts kind, pubkey prefix, tags, since, until filters",
+        "Filter behavior matches protocol.md",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 10,
+      "passes": true,
+      "notes": "Implemented subscribe/unsubscribe and filters in implementations/typescript-sdk/src/client.ts and src/filters.ts with tests in implementations/typescript-sdk/tests/filters.test.js."
+    },
+    {
+      "id": "JD-011",
+      "title": "TypeScript SDK: CRDT G-Counter",
+      "description": "As a TypeScript developer, I want a G-Counter helper.",
+      "acceptanceCriteria": [
+        "G-Counter supports increment and merge",
+        "Serialization/deserialization helpers are provided",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 11,
+      "passes": true,
+      "notes": "Added CRDT GCounter in implementations/typescript-sdk/src/crdt.ts with tests in implementations/typescript-sdk/tests/crdt.test.js."
+    },
+    {
+      "id": "JD-012",
+      "title": "TypeScript SDK: CRDT PN-Counter",
+      "description": "As a TypeScript developer, I want a PN-Counter helper.",
+      "acceptanceCriteria": [
+        "PN-Counter supports increment, decrement, and merge",
+        "Serialization/deserialization helpers are provided",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 12,
+      "passes": true,
+      "notes": "Added CRDT PNCounter in implementations/typescript-sdk/src/crdt.ts with tests in implementations/typescript-sdk/tests/crdt.test.js."
+    },
+    {
+      "id": "JD-013",
+      "title": "TypeScript SDK: CRDT LWW-Register",
+      "description": "As a TypeScript developer, I want an LWW-Register helper.",
+      "acceptanceCriteria": [
+        "LWW-Register stores value with timestamp",
+        "Merge resolves by timestamp and tie-breaker",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 13,
+      "passes": true,
+      "notes": "Added CRDT LWWRegister in implementations/typescript-sdk/src/crdt.ts with tests in implementations/typescript-sdk/tests/crdt.test.js."
+    },
+    {
+      "id": "JD-014",
+      "title": "TypeScript SDK: CRDT OR-Set",
+      "description": "As a TypeScript developer, I want an OR-Set helper.",
+      "acceptanceCriteria": [
+        "OR-Set supports add, remove, and merge",
+        "Serialization/deserialization helpers are provided",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 14,
+      "passes": true,
+      "notes": "Added CRDT ORSet in implementations/typescript-sdk/src/crdt.ts with tests in implementations/typescript-sdk/tests/crdt.test.js."
+    },
+    {
+      "id": "JD-015",
+      "title": "TypeScript SDK: capability tokens",
+      "description": "As a TypeScript developer, I want to create and verify capability chains.",
+      "acceptanceCriteria": [
+        "SDK constructs capability token chains",
+        "SDK verifies chains and caveats",
+        "Matches capability test vectors",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 15,
+      "passes": true,
+      "notes": "Added capability token helpers in implementations/typescript-sdk/src/capabilities.ts with tests in implementations/typescript-sdk/tests/capabilities.test.js."
+    },
+    {
+      "id": "JD-016",
+      "title": "TypeScript SDK: PoW helper",
+      "description": "As a TypeScript developer, I want a helper to compute PoW nonces.",
+      "acceptanceCriteria": [
+        "SDK exposes helper to compute PoW nonce for a target difficulty",
+        "Helper is covered by tests",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 16,
+      "passes": true,
+      "notes": "Added PoW helper in implementations/typescript-sdk/src/pow.ts with tests in implementations/typescript-sdk/tests/pow.test.js."
+    },
+    {
+      "id": "JD-017",
+      "title": "TypeScript SDK: invoice attachment support",
+      "description": "As a TypeScript developer, I want to serialize and parse invoice attachments.",
+      "acceptanceCriteria": [
+        "SDK can serialize invoice attachment for kind 10002",
+        "SDK can parse invoice attachment from events",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 17,
+      "passes": true,
+      "notes": "Added invoice helpers in implementations/typescript-sdk/src/invoice.ts with tests in implementations/typescript-sdk/tests/invoice.test.js."
+    }
+  ]
+}
