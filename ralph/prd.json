@@ -113,8 +113,8 @@
         "Typecheck passes"
       ],
       "priority": 8,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Added in-memory store with immutable/replaceable/ephemeral/parameterized semantics plus query filtering and storage tests."
     },
     {
       "id": "JD-009",
