@@ -1,0 +1,41 @@
+---
+description: TypeScript development guidelines for Aether Protocol
+globs: implementations/typescript-sdk/**/*.ts implementations/typescript-sdk/**/*.tsx
+alwaysApply: false
+---
+
+# TypeScript Development Guidelines
+
+## Build, Test, and Development Commands
+
+```bash
+# Install dependencies
+cd implementations/typescript-sdk
+npm install
+
+# Run tests
+npm test
+
+# Build
+npm run build
+
+# Lint
+npm run lint
+```
+
+## Coding Style & Naming Conventions
+
+- Follow TypeScript/ESLint conventions.
+- Indentation: 2 spaces.
+- Naming: `camelCase` for functions/variables, `PascalCase` for classes/types, `SCREAMING_SNAKE_CASE` for constants.
+- Type safety: Strict mode enabled, avoid `any`.
+- Formatting: Use Prettier, ESLint for linting.
+
+## Testing Guidelines
+
+- Use Jest or Vitest for testing.
+- Unit tests in `src/**/*.test.ts`.
+- Integration tests in `tests/`.
+- Test names should be descriptive, e.g., `rejectsInvalidSignature`.
+- Run `npm test` before submitting changes.
+- All implementations must pass 100% of test vectors from `spec/test-vectors/`.

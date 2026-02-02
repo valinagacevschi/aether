@@ -1,0 +1,17 @@
+---
+description: Architecture and implementation strategy decisions
+alwaysApply: false
+---
+
+# Implementation Strategy
+
+**"Python for infrastructure, idiomatic SDKs for developers"**
+- **Relay:** Python (asyncio-native, debuggable by ML engineers)
+- **Python SDK:** Native Python (shares codebase with relay)
+- **TypeScript SDK:** Native TypeScript with WASM crypto bundle
+
+This ensures `pip install` and `npm install` work immediately while maintaining debuggability and ecosystem alignment.
+
+## Cross-Language Feature Parity
+
+When adding features, ensure both Python and TypeScript SDKs are updated (or document why only one is needed).

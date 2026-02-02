@@ -1,0 +1,43 @@
+---
+description: Python development guidelines for Aether Protocol
+globs: implementations/relay/**/*.py implementations/python-sdk/**/*.py
+alwaysApply: false
+---
+
+# Python Development Guidelines
+
+## Build, Test, and Development Commands
+
+```bash
+# Install dependencies
+cd implementations/relay  # or python-sdk
+pip install -e ".[dev]"
+
+# Run tests
+pytest
+
+# Format code
+black .
+ruff check --fix .
+
+# Type checking
+mypy .
+```
+
+## Coding Style & Naming Conventions
+
+- Follow PEP 8 conventions.
+- Indentation: 4 spaces.
+- Naming: `snake_case` for functions/variables, `PascalCase` for classes, `SCREAMING_SNAKE_CASE` for constants.
+- Type hints: Use type annotations (`typing` module or built-in types).
+- Formatting: Use `black` for formatting, `ruff` for linting.
+- Async: Use `asyncio` for all I/O operations.
+
+## Testing Guidelines
+
+- Use `pytest` for all tests.
+- Unit tests live in `tests/` directory or alongside code as `test_*.py`.
+- Integration tests in `tests/integration/`.
+- Test names should be descriptive, e.g., `test_rejects_invalid_signature`.
+- Run `pytest` before submitting changes.
+- All implementations must pass 100% of test vectors from `spec/test-vectors/`.

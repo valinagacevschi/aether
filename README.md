@@ -40,7 +40,8 @@ pip install aether-sdk
 
 # Or install from source
 git clone <repository-url>
-cd aether/implementations/python-sdk
+cd aether
+cd implementations/python-sdk
 pip install -e .
 ```
 
@@ -52,7 +53,8 @@ npm install aether-sdk
 
 # Or install from source
 git clone <repository-url>
-cd aether/implementations/typescript-sdk
+cd aether
+cd implementations/typescript-sdk
 npm install
 ```
 
@@ -61,7 +63,8 @@ npm install
 ```bash
 # Install relay server
 git clone <repository-url>
-cd aether/implementations/relay
+cd aether
+cd implementations/relay
 pip install -e .
 
 # Run relay

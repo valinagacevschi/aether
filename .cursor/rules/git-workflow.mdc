@@ -1,0 +1,20 @@
+---
+description: Git commit and pull request guidelines
+alwaysApply: false
+---
+
+# Git Workflow Guidelines
+
+## Commit Messages
+
+Git history shows short, sentence-case summaries (e.g., "Add initial implementation…"). Use the same style:
+- Imperative, present tense, no trailing period.
+
+## Pull Requests
+
+Pull requests should include:
+- A short summary of changes and motivation.
+- References to relevant issues, PRD sections, or RFC sections.
+- Notes on tests run (or why not applicable).
+- For protocol changes, update `RFC.txt`, `PRD.md`, and relevant docs.
+- Ensure conformance tests pass (Python relay, Python SDK, TypeScript SDK all pass test vectors).

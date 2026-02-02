@@ -1,0 +1,18 @@
+---
+description: Conformance testing and interoperability requirements
+alwaysApply: false
+---
+
+# Conformance & Interoperability
+
+## Shared Test Vectors
+
+All implementations must pass 100% of test vectors from `spec/test-vectors/`.
+
+## Interoperability
+
+Weekly "plug-fest" testing ensures Python client ↔ Python relay ↔ TypeScript client work together.
+
+## CI/CD
+
+All implementations are tested against the same test vectors in CI.

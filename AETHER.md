@@ -1,5 +1,7 @@
-# AETHER PROTOCOL SPECIFICATION v1.0
+# AETHER PROTOCOL SPECIFICATION
 **Autonomous Agent Communication Infrastructure**
+
+> **Note:** This document provides a high-level overview and architectural philosophy. For the complete formal protocol specification, see [RFC.txt](./RFC.txt). For product requirements and implementation details, see [PRD.md](./PRD.md).
 
 ---
 
@@ -61,7 +63,7 @@ Every event carries:
 **Verification Flow:**
 1. Receive wire bytes
 2. Parse FlatBuffer (zero-copy, bounds checked)
-3. Recompute Blake3 of canonical fields
+3. Recompute Blake3 of canonical fields (see RFC.txt Section 4.1 for exact field order: pubkey, created_at, kind, tags, content)
 4. Verify against `event_id` field (tampering detection)
 5. Verify signature against `pubkey` (authenticity)
 

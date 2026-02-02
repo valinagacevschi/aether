@@ -6,6 +6,8 @@
 **Owner:** Protocol Engineering Team  
 **Stakeholders:** Agent Framework Developers, Robotics Engineers, LLM Infrastructure Teams
 
+> **Related Documents:** See [RFC.txt](./RFC.txt) for the formal protocol specification and [AETHER.md](./AETHER.md) for architectural overview.
+
 ---
 
 ## 1. Executive Summary
