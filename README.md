@@ -1,6 +1,6 @@
-# Aether Protocol - Rust Implementation
+# Aether Protocol
 
-A Rust implementation of the Aether (AT) protocol, a binary messaging system for autonomous agent communication.
+A Python and TypeScript implementation of the Aether (AT) protocol, a binary messaging system for autonomous agent communication optimized for AI agent frameworks.
 
 ## Overview
 
@@ -16,7 +16,7 @@ Aether is a transport-agnostic, content-addressed messaging protocol optimized f
 
 ## Protocol Specification
 
-See [RFC.txt](./RFC.txt) for the complete protocol specification.
+See [PRD.md](./PRD.md) for the complete product requirements and [RFC.txt](./RFC.txt) for the protocol specification.
 
 ## Architecture
 
@@ -32,66 +32,111 @@ See [RFC.txt](./RFC.txt) for the complete protocol specification.
 
 ## Installation
 
+### Python SDK
+
 ```bash
-# Clone the repository
+# Install from PyPI (when available)
+pip install aether-sdk
+
+# Or install from source
 git clone <repository-url>
-cd aether
+cd aether/implementations/python-sdk
+pip install -e .
+```
 
-# Build the project
-cargo build --release
+### TypeScript SDK
 
-# Run tests
-cargo test
+```bash
+# Install from npm (when available)
+npm install aether-sdk
+
+# Or install from source
+git clone <repository-url>
+cd aether/implementations/typescript-sdk
+npm install
+```
+
+### Python Relay
+
+```bash
+# Install relay server
+git clone <repository-url>
+cd aether/implementations/relay
+pip install -e .
+
+# Run relay
+aether-relay --port 443 --storage ./data
 ```
 
 ## Usage
 
-### Creating an Event
+### Python SDK
 
-```rust
-use aether::event::{Event, EventKind};
-use aether::crypto::Keypair;
+```python
+import asyncio
+from aether import AetherClient, EventKind, Filter
 
-// Generate a keypair
-let keypair = Keypair::generate();
+async def main():
+    # Connect to relay
+    client = await AetherClient.connect("relay.example.com:443")
+    
+    # Generate keypair
+    keypair = client.generate_keypair()
+    
+    # Create and publish an event
+    event = await client.create_event(
+        kind=EventKind.IMMUTABLE(0),  # Agent metadata
+        content=b'{"name":"agent-1"}',
+        keypair=keypair
+    )
+    await client.publish(event)
+    
+    # Subscribe to events
+    filter = Filter(
+        kinds=[EventKind.EPHEMERAL(29999)],
+        tags={"c": ["vision"]},
+        since=timestamp
+    )
+    
+    async for event in client.subscribe(filter):
+        print(f"Received event: {event}")
 
-// Create an event
-let event = Event::builder()
-    .kind(EventKind::Immutable(0)) // Agent metadata
-    .content(b"{\"name\":\"agent-1\"}".to_vec())
-    .build(&keypair)?;
-
-// Calculate event_id and sign
-let event_id = event.calculate_id();
-let signed_event = event.sign(&keypair)?;
+asyncio.run(main())
 ```
 
-### Publishing to a Relay
+### TypeScript SDK
 
-```rust
-use aether::relay::RelayClient;
+```typescript
+import { AetherClient, EventKind, Filter } from 'aether-sdk';
 
-let relay = RelayClient::connect("relay.example.com:443").await?;
-relay.publish(signed_event).await?;
-```
-
-### Subscribing to Events
-
-```rust
-use aether::filter::Filter;
-
-let filter = Filter::builder()
-    .kinds(vec![EventKind::Ephemeral(29999)])
-    .tag_filter("c", vec!["vision".to_string()])
-    .since(timestamp)
-    .build();
-
-let mut subscription = relay.subscribe(filter).await?;
-
-while let Some(event) = subscription.next().await? {
-    // Process event
-    println!("Received event: {:?}", event);
+async function main() {
+  // Connect to relay
+  const client = await AetherClient.connect('relay.example.com:443');
+  
+  // Generate keypair
+  const keypair = client.generateKeypair();
+  
+  // Create and publish an event
+  const event = await client.createEvent({
+    kind: EventKind.IMMUTABLE(0), // Agent metadata
+    content: Buffer.from('{"name":"agent-1"}'),
+    keypair
+  });
+  await client.publish(event);
+  
+  // Subscribe to events
+  const filter = new Filter({
+    kinds: [EventKind.EPHEMERAL(29999)],
+    tags: { c: ['vision'] },
+    since: timestamp
+  });
+  
+  for await (const event of client.subscribe(filter)) {
+    console.log('Received event:', event);
+  }
 }
+
+main();
 ```
 
 ## Event Kinds
@@ -103,11 +148,20 @@ while let Some(event) = subscription.next().await? {
 
 ## Dependencies
 
-- **ed25519-dalek**: Ed25519 signatures
+### Python SDK & Relay
+- **PyNaCl**: Ed25519 signatures
 - **blake3**: Content-addressed hashing
 - **flatbuffers**: Zero-copy serialization
-- **quinn**: QUIC transport (recommended)
-- **tokio**: Async runtime
+- **aioquic**: QUIC transport (asyncio-native)
+- **websockets**: WebSocket fallback
+- **py-libp2p**: Gossipsub for relay mesh
+
+### TypeScript SDK
+- **@noble/ed25519** or **tweetnacl**: Ed25519 signatures
+- **blake3**: Content-addressed hashing (WASM)
+- **flatbuffers**: Zero-copy serialization
+- **ws** or **node-quic**: Transport (WebSocket/QUIC)
+- **libp2p**: Gossipsub (Node.js only)
 
 ## Security
 
@@ -116,9 +170,20 @@ while let Some(event) = subscription.next().await? {
 - Content sandboxing (no execution of payloads)
 - Optional Proof-of-Work for spam prevention
 
+## Architecture
+
+**Implementation Strategy:** "Python for infrastructure, idiomatic SDKs for developers"
+- **Relay:** Python (asyncio-native, handles 100K+ TPS)
+- **Python SDK:** Native Python (shares codebase with relay)
+- **TypeScript SDK:** Native TypeScript with WASM crypto bundle
+
+This approach ensures `pip install` and `npm install` work immediately while maintaining debuggability and ecosystem alignment with agent frameworks (LangChain, AutoGen, CrewAI, Vercel AI SDK, LangChain.js).
+
 ## Status
 
 ⚠️ **Early Development** - This implementation is under active development and may have breaking changes.
+
+See [PRD.md](./PRD.md) for the complete product requirements and roadmap.
 
 ## License
 
