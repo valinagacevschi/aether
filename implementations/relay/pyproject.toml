@@ -10,6 +10,10 @@ requires-python = ">=3.10"
 dependencies = [
   "PyNaCl",
   "blake3",
+  "aioquic",
+  "py-libp2p",
+  "python-rocksdb",
+  "websockets",
 ]
 
 [project.optional-dependencies]

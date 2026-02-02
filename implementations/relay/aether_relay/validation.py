@@ -6,6 +6,8 @@ import time
 from typing import Mapping
 
 from .crypto import compute_event_id, normalize_tags, verify
+from .limits import RateLimiter, enforce_max_size
+from .pow import validate_pow
 
 WINDOW_NS = 60_000_000_000
 MAX_KIND = 39_999
@@ -16,6 +18,9 @@ def validate_event(
     *,
     now_ns: int | None = None,
     window_ns: int = WINDOW_NS,
+    rate_limiter: RateLimiter | None = None,
+    max_size: int | None = None,
+    pow_difficulty: int | None = None,
 ) -> None:
     """Validate an event or raise ValueError."""
 
@@ -29,6 +34,8 @@ def validate_event(
 
     if kind < 0 or kind > MAX_KIND:
         raise ValueError("kind out of range")
+    if max_size is not None:
+        enforce_max_size(event, max_size)
 
     computed = compute_event_id(
         pubkey=pubkey,
@@ -41,10 +48,14 @@ def validate_event(
         raise ValueError("event_id mismatch")
     if not verify(event_id, sig, pubkey):
         raise ValueError("invalid signature")
+    if pow_difficulty is not None:
+        validate_pow(event_id, pow_difficulty)
 
     now = time.time_ns() if now_ns is None else now_ns
     if abs(created_at - now) > window_ns:
         raise ValueError("created_at outside allowed window")
+    if rate_limiter is not None and not rate_limiter.allow(pubkey):
+        raise ValueError("rate limit exceeded")
 
 
 def _parse_hex_or_bytes(value: object, field: str, size: int) -> bytes:

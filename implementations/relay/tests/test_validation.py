@@ -6,6 +6,7 @@ from typing import TypedDict, cast
 import pytest
 import yaml
 
+from aether_relay.limits import RateLimiter
 from aether_relay.validation import MAX_KIND, WINDOW_NS, validate_event
 
 
@@ -57,6 +58,27 @@ def test_rejects_timestamp_outside_window() -> None:
     now = created_at - (WINDOW_NS + 1)
     with pytest.raises(ValueError, match="created_at outside allowed window"):
         validate_event(event, now_ns=now)
+
+
+def test_rejects_rate_limited_event() -> None:
+    limiter = RateLimiter(capacity=1, refill_per_second=0.0, now_ns=lambda: 0)
+    event = _load_vectors("valid-events.yaml")[0].copy()
+    validate_event(event, rate_limiter=limiter, now_ns=int(event["created_at"]))
+    with pytest.raises(ValueError, match="rate limit"):
+        validate_event(event, rate_limiter=limiter, now_ns=int(event["created_at"]))
+
+
+def test_rejects_oversized_event() -> None:
+    event = _load_vectors("valid-events.yaml")[0].copy()
+    event["content"] = "x" * 10
+    with pytest.raises(ValueError, match="maximum size"):
+        validate_event(event, max_size=1, now_ns=int(event["created_at"]))
+
+
+def test_rejects_pow_failure() -> None:
+    event = _load_vectors("valid-events.yaml")[0].copy()
+    with pytest.raises(ValueError, match="pow difficulty"):
+        validate_event(event, pow_difficulty=8, now_ns=int(event["created_at"]))
 
 
 def _load_vectors(name: str) -> list[EventVector]:

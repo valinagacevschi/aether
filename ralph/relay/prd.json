@@ -1,0 +1,400 @@
+{
+  "project": "Aether Protocol",
+  "branchName": "ralph/aether-relay-v1",
+  "description": "Python relay implementation: validation, storage semantics, filtering, transport, and protections",
+  "userStories": [
+    {
+      "id": "JD-001",
+      "title": "Relay: validate signatures",
+      "description": "As a relay operator, I want signature verification enforced so invalid events are rejected.",
+      "acceptanceCriteria": [
+        "Relay verifies Ed25519 signatures against event_id",
+        "Invalid signatures are rejected before storage",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": "Already implemented: validation verifies Ed25519 signatures in aether_relay/validation.py with tests in implementations/relay/tests/test_validation.py."
+    },
+    {
+      "id": "JD-002",
+      "title": "Relay: validate event_id",
+      "description": "As a relay operator, I want event_id recomputed so tampered events are rejected.",
+      "acceptanceCriteria": [
+        "Relay recomputes event_id from canonical fields",
+        "Mismatch events are rejected before storage",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": "Already implemented: event_id recomputed in aether_relay/validation.py with tests in implementations/relay/tests/test_validation.py."
+    },
+    {
+      "id": "JD-003",
+      "title": "Relay: validate timestamps",
+      "description": "As a relay operator, I want timestamp window checks to prevent replay.",
+      "acceptanceCriteria": [
+        "Relay rejects events older than 60s or newer than 60s in the future",
+        "Timestamp window is configurable",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": "Already implemented: timestamp window enforced in aether_relay/validation.py with tests in implementations/relay/tests/test_validation.py."
+    },
+    {
+      "id": "JD-004",
+      "title": "Relay: enforce kind policy",
+      "description": "As a relay operator, I want kind policy rules enforced per spec.",
+      "acceptanceCriteria": [
+        "Relay routes immutable, replaceable, ephemeral, parameterized kinds to correct handlers",
+        "Out-of-range kinds are rejected",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": "Already implemented: kind range enforced in aether_relay/validation.py with tests in implementations/relay/tests/test_validation.py."
+    },
+    {
+      "id": "JD-005",
+      "title": "Relay: immutable storage retention",
+      "description": "As a relay operator, I want immutable events stored with retention policy.",
+      "acceptanceCriteria": [
+        "Immutable events are persisted to storage",
+        "Retention duration is configurable",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": "Added retention support to InMemoryEventStore (retention_ns, pruning) with test in implementations/relay/tests/test_storage.py."
+    },
+    {
+      "id": "JD-006",
+      "title": "Relay: replaceable storage behavior",
+      "description": "As a relay operator, I want replaceable events to keep only the latest per key.",
+      "acceptanceCriteria": [
+        "Replaceable key is (pubkey, kind)",
+        "Older replaceable events are removed on insert",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 6,
+      "passes": true,
+      "notes": "Replaceable overwrite logic already implemented in InMemoryEventStore with tests in implementations/relay/tests/test_storage.py."
+    },
+    {
+      "id": "JD-007",
+      "title": "Relay: parameterized storage behavior",
+      "description": "As a relay operator, I want parameterized events to keep latest per (pubkey, kind, d-tag).",
+      "acceptanceCriteria": [
+        "Parameterized key uses d-tag value from tags",
+        "Older events for same key are removed on insert",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 7,
+      "passes": true,
+      "notes": "Parameterized storage by d-tag already implemented in InMemoryEventStore with tests in implementations/relay/tests/test_storage.py."
+    },
+    {
+      "id": "JD-008",
+      "title": "Relay: ephemeral broadcast-only",
+      "description": "As a relay operator, I want ephemeral events broadcast without storage.",
+      "acceptanceCriteria": [
+        "Ephemeral events are forwarded to subscribers",
+        "Ephemeral events are not written to storage",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 8,
+      "passes": true,
+      "notes": "Ephemeral events are not stored in InMemoryEventStore; covered by implementations/relay/tests/test_storage.py."
+    },
+    {
+      "id": "JD-009",
+      "title": "Relay: indexes for pubkey, kind, tags",
+      "description": "As a relay operator, I want indexes for efficient queries.",
+      "acceptanceCriteria": [
+        "Storage has indexes for pubkey and kind",
+        "Storage has a tags index to support tag queries",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 9,
+      "passes": true,
+      "notes": "Added in-memory indexes for pubkey/kind/tags with tag-aware query filtering in implementations/relay/aether_relay/storage/memory.py plus tests in implementations/relay/tests/test_storage.py."
+    },
+    {
+      "id": "JD-010",
+      "title": "Relay: subscription filtering",
+      "description": "As a client, I want relay subscriptions to filter by kind, pubkey prefix, tags, since, until.",
+      "acceptanceCriteria": [
+        "Filtering supports kind and pubkey prefix",
+        "Filtering supports tags and time range",
+        "Behavior matches spec/protocol.md",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 10,
+      "passes": true,
+      "notes": "Implemented subscription filter matching via aether_relay/filters.py and wired in SubscriptionManager; tests in implementations/relay/tests/test_filters.py and test_subscriptions.py."
+    },
+    {
+      "id": "JD-011",
+      "title": "Relay: QUIC endpoint",
+      "description": "As a relay operator, I want a QUIC server for primary transport.",
+      "acceptanceCriteria": [
+        "Relay listens on QUIC endpoint with protocol version negotiation",
+        "Connection accepts publish and subscribe messages",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 11,
+      "passes": true,
+      "notes": "Added QUIC server in implementations/relay/aether_relay/quic_transport.py and asyncio entrypoint in server.py."
+    },
+    {
+      "id": "JD-012",
+      "title": "Relay: WebSocket fallback",
+      "description": "As a relay operator, I want a WebSocket endpoint for browser clients.",
+      "acceptanceCriteria": [
+        "Relay exposes WebSocket endpoint",
+        "WebSocket endpoint supports publish and subscribe",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 12,
+      "passes": true,
+      "notes": "Added WebSocket server in implementations/relay/aether_relay/websocket_transport.py and entrypoint wiring in server.py."
+    },
+    {
+      "id": "JD-013",
+      "title": "Relay: rate limiting",
+      "description": "As a relay operator, I want per-pubkey rate limits.",
+      "acceptanceCriteria": [
+        "Token bucket limit enforced per pubkey",
+        "Rate limit config is adjustable",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 13,
+      "passes": true,
+      "notes": "Added RateLimiter in implementations/relay/aether_relay/limits.py and enforced in validate_event; tests in implementations/relay/tests/test_limits.py and test_validation.py."
+    },
+    {
+      "id": "JD-014",
+      "title": "Relay: max message size",
+      "description": "As a relay operator, I want max message size enforcement.",
+      "acceptanceCriteria": [
+        "Relay rejects messages larger than 16MB",
+        "Limit is configurable",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 14,
+      "passes": true,
+      "notes": "Added max size computation/enforcement in implementations/relay/aether_relay/limits.py and validate_event; tests in implementations/relay/tests/test_limits.py and test_validation.py."
+    },
+    {
+      "id": "JD-015",
+      "title": "Relay: gossipsub forwarding",
+      "description": "As a relay operator, I want optional gossipsub mesh forwarding.",
+      "acceptanceCriteria": [
+        "Relay can enable/disable gossipsub via config",
+        "When enabled, events are forwarded to peers",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 15,
+      "passes": true,
+      "notes": "Added GossipMesh and publish forwarding via RelayCore gossip_publish hook (aether_relay/gossip.py, core.py, server.py)."
+    },
+    {
+      "id": "JD-016",
+      "title": "Relay: capability enforcement",
+      "description": "As a relay operator, I want capability validation for protected actions.",
+      "acceptanceCriteria": [
+        "Relay validates capability token chains on protected actions",
+        "Invalid or expired chains are rejected",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 16,
+      "passes": true,
+      "notes": "Added capability token validation in implementations/relay/aether_relay/capabilities.py with tests in implementations/relay/tests/test_capabilities.py."
+    },
+    {
+      "id": "JD-017",
+      "title": "Relay: PoW verification",
+      "description": "As a relay operator, I want to require PoW for spam protection.",
+      "acceptanceCriteria": [
+        "Relay verifies PoW difficulty on event_id",
+        "Difficulty is configurable",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 17,
+      "passes": true,
+      "notes": "Added PoW validation in implementations/relay/aether_relay/pow.py and validate_event; tests in implementations/relay/tests/test_pow.py and test_validation.py."
+    },
+    {
+      "id": "JD-018",
+      "title": "Relay: aioquic server integration",
+      "description": "As a relay operator, I want aioquic integrated so QUIC transport is real.",
+      "acceptanceCriteria": [
+        "Relay initializes aioquic configuration and protocol handlers",
+        "QUIC listener accepts a connection and processes one publish",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 18,
+      "passes": true,
+      "notes": "Integrated aioquic via quic_transport.py serve_quic and QuicRelayProtocol."
+    },
+    {
+      "id": "JD-019",
+      "title": "Relay: WebSocket server integration",
+      "description": "As a relay operator, I want websockets integrated so browsers can connect.",
+      "acceptanceCriteria": [
+        "Relay starts a WebSocket server using websockets library",
+        "WebSocket client can publish and subscribe",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 19,
+      "passes": true,
+      "notes": "Integrated websockets via websocket_transport.py serve_websocket."
+    },
+    {
+      "id": "JD-020",
+      "title": "Relay: asyncio server loop",
+      "description": "As a relay operator, I want a unified asyncio loop that runs QUIC and WebSocket servers.",
+      "acceptanceCriteria": [
+        "server.py starts asyncio loop and runs both listeners",
+        "Graceful shutdown closes active connections",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 20,
+      "passes": true,
+      "notes": "Implemented asyncio server loop and graceful shutdown in implementations/relay/aether_relay/server.py."
+    },
+    {
+      "id": "JD-021",
+      "title": "Relay: filter matching engine",
+      "description": "As a client, I want filter matching logic centralized and testable.",
+      "acceptanceCriteria": [
+        "Filter matcher function evaluates kind, pubkey prefix, tags, since, until",
+        "Unit tests cover each filter type",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 21,
+      "passes": true,
+      "notes": "Added filter matching engine in implementations/relay/aether_relay/filters.py with tests in implementations/relay/tests/test_filters.py."
+    },
+    {
+      "id": "JD-022",
+      "title": "Relay: subscription tracking",
+      "description": "As a relay operator, I want per-connection subscription state tracked.",
+      "acceptanceCriteria": [
+        "Relay stores subscriptions per connection with unique IDs",
+        "Unsubscribe removes subscription and stops delivery",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 22,
+      "passes": true,
+      "notes": "Added SubscriptionManager for per-connection tracking in implementations/relay/aether_relay/subscriptions.py with tests in implementations/relay/tests/test_subscriptions.py."
+    },
+    {
+      "id": "JD-023",
+      "title": "Relay: real-time event routing",
+      "description": "As a client, I want published events routed to matching subscriptions in real time.",
+      "acceptanceCriteria": [
+        "Publish path evaluates active subscriptions and dispatches matches",
+        "Dispatch uses non-blocking asyncio tasks",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 23,
+      "passes": true,
+      "notes": "Implemented non-blocking dispatch using asyncio tasks in SubscriptionManager.dispatch with tests in implementations/relay/tests/test_subscriptions.py."
+    },
+    {
+      "id": "JD-024",
+      "title": "Relay: py-libp2p integration",
+      "description": "As a relay operator, I want py-libp2p initialized for gossipsub.",
+      "acceptanceCriteria": [
+        "Relay can start a libp2p host and join a gossipsub topic",
+        "Config includes peer list and topic name",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 24,
+      "passes": true,
+      "notes": "Added py-libp2p integration wrapper in implementations/relay/aether_relay/gossip.py with tests in implementations/relay/tests/test_gossip.py."
+    },
+    {
+      "id": "JD-025",
+      "title": "Relay: relay-to-relay gossip forwarding",
+      "description": "As a relay operator, I want events forwarded to mesh peers.",
+      "acceptanceCriteria": [
+        "Relay publishes validated events to gossipsub topic",
+        "Relay consumes gossiped events and applies validation",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 25,
+      "passes": true,
+      "notes": "Forwarded published events to gossip mesh via RelayCore gossip_publish hook and server wiring."
+    },
+    {
+      "id": "JD-026",
+      "title": "Relay: SQLite storage backend",
+      "description": "As a relay operator, I want a durable SQLite backend for events and indexes.",
+      "acceptanceCriteria": [
+        "SQLite schema stores events and indexes for pubkey, kind, tags",
+        "Storage backend is selectable via config",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 26,
+      "passes": true,
+      "notes": "Added SQLiteEventStore backend with schema/indexes in implementations/relay/aether_relay/storage/sqlite.py and tests in implementations/relay/tests/test_sqlite_storage.py."
+    },
+    {
+      "id": "JD-027",
+      "title": "Relay: RocksDB storage backend",
+      "description": "As a relay operator, I want an optional RocksDB backend for higher throughput.",
+      "acceptanceCriteria": [
+        "RocksDB backend implements same interface as SQLite backend",
+        "Backend selection is configurable",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 27,
+      "passes": true,
+      "notes": "Added RocksDBEventStore backend in implementations/relay/aether_relay/storage/rocksdb.py with tests in implementations/relay/tests/test_rocksdb_storage.py."
+    },
+    {
+      "id": "JD-028",
+      "title": "Relay: Bloom filter for dedup",
+      "description": "As a relay operator, I want a Bloom filter to quickly reject duplicates.",
+      "acceptanceCriteria": [
+        "Bloom filter caches recent event_id values",
+        "Duplicate event_id is rejected before storage lookup",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 28,
+      "passes": true,
+      "notes": "Added BloomFilter and integrated into InMemoryEventStore for dedup; tests in implementations/relay/tests/test_storage.py."
+    }
+  ]
+}
