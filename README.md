@@ -39,7 +39,7 @@ See [PRD.md](./PRD.md) for the complete product requirements and [RFC.txt](./RFC
 pip install aether-sdk
 
 # Or install from source
-git clone <repository-url>
+git clone https://github.com/valinagacevschi/aether
 cd aether
 cd implementations/python-sdk
 pip install -e .
@@ -52,7 +52,7 @@ pip install -e .
 npm install aether-sdk
 
 # Or install from source
-git clone <repository-url>
+git clone https://github.com/valinagacevschi/aether
 cd aether
 cd implementations/typescript-sdk
 npm install
@@ -62,7 +62,7 @@ npm install
 
 ```bash
 # Install relay server
-git clone <repository-url>
+git clone https://github.com/valinagacevschi/aether
 cd aether
 cd implementations/relay
 pip install -e .
