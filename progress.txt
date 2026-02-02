@@ -11,3 +11,4 @@
 2026-02-02: Completed JD-010 by scaffolding implementations/typescript-sdk (package.json, tsconfig.json, src/client.ts stub with connect/publish). pnpm typecheck/test still fail at repo root: no package.json.
 2026-02-02: Completed JD-012 by adding aether/crdt helpers (GCounter, PNCounter, LWWRegister, ORSet) with minimal merge semantics and tests. pnpm typecheck/test fail at repo root: no package.json. pytest/mypy not available in PATH in implementations/python-sdk.
 2026-02-02: Fixed mypy typing in in-memory store (separate replaceable/parameterized keys) and added root package.json + TS pnpm-lock so pnpm typecheck/test run. pnpm typecheck/test pass with PATH=/tmp/aether-venv/bin:$PATH.
+2026-02-02: Added scripts/python-dev.sh to provision a local venv and install relay/SDK dev extras; root pnpm typecheck/test now use it. pnpm typecheck/test initially failed due to missing mypy/pytest; reran after change.

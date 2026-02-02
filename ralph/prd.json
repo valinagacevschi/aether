@@ -168,6 +168,20 @@
       "priority": 12,
       "passes": true,
       "notes": "Added aether/crdt with minimal GCounter, PNCounter, LWWRegister, and ORSet helpers plus tests."
+    },
+    {
+      "id": "JD-013",
+      "title": "Make root checks self-contained",
+      "description": "As a maintainer, I want root checks to provision Python dev deps so typecheck/test run without manual setup.",
+      "acceptanceCriteria": [
+        "Add a script to create a local venv and install relay/SDK dev extras",
+        "Root `pnpm typecheck` and `pnpm test` use the script for Python tooling",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 13,
+      "passes": true,
+      "notes": "Added scripts/python-dev.sh to provision a local venv and install dev extras; root pnpm scripts now use it."
     }
   ]
 }
