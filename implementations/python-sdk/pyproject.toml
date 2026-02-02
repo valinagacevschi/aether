@@ -7,6 +7,12 @@ name = "aether"
 version = "0.1.0"
 description = "Aether Python SDK"
 requires-python = ">=3.10"
+dependencies = [
+  "PyNaCl",
+  "blake3",
+  "bech32",
+  "websockets",
+]
 
 [project.optional-dependencies]
 dev = [
