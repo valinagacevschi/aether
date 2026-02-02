@@ -27,8 +27,8 @@
         "Typecheck passes"
       ],
       "priority": 2,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Added spec/protocol.md with kind range semantics."
     },
     {
       "id": "JD-003",
