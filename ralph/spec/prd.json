@@ -1,0 +1,195 @@
+{
+  "project": "Aether Protocol",
+  "branchName": "ralph/aether-spec-v1",
+  "description": "Spec-first definitions for events, kinds, transport, capabilities, and economics",
+  "userStories": [
+    {
+      "id": "JD-001",
+      "title": "Define event structure in FlatBuffers schema",
+      "description": "As a protocol developer, I want the FlatBuffers schema to define event fields and sizes so all implementations match.",
+      "acceptanceCriteria": [
+        "spec/schema.fbs defines fields: event_id, pubkey, kind, created_at, tags, content, sig",
+        "Field sizes are specified in comments for event_id (32B), pubkey (32B), sig (64B)",
+        "Tag array limits (max tags, max tag size) are documented in schema comments",
+        "Typecheck passes"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": "Added spec/schema.fbs with Event/Tag fields and size/limit comments."
+    },
+    {
+      "id": "JD-002",
+      "title": "Define event kind ranges in protocol spec",
+      "description": "As a protocol developer, I want protocol.md to list kind ranges and their semantics.",
+      "acceptanceCriteria": [
+        "spec/protocol.md lists kind ranges: 0-999, 10000-19999, 20000-29999, 30000-39999",
+        "Each range includes a one-sentence storage semantic definition",
+        "Typecheck passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "JD-003",
+      "title": "Specify replaceable conflict resolution",
+      "description": "As a protocol developer, I want replaceable conflict resolution rules to be explicit.",
+      "acceptanceCriteria": [
+        "spec/protocol.md defines replaceable key as (pubkey, kind)",
+        "spec/protocol.md states latest created_at wins and ties resolve by event_id lexicographic order",
+        "Typecheck passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "JD-004",
+      "title": "Specify parameterized conflict resolution",
+      "description": "As a protocol developer, I want parameterized conflict rules to be explicit.",
+      "acceptanceCriteria": [
+        "spec/protocol.md defines parameterized key as (pubkey, kind, d-tag)",
+        "spec/protocol.md specifies which tag key is used for d-tag",
+        "Typecheck passes"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "JD-005",
+      "title": "Document event_id hashing algorithm",
+      "description": "As an implementer, I want the hash algorithm defined so event_id is consistent.",
+      "acceptanceCriteria": [
+        "spec/protocol.md specifies Blake3 over the canonical serialized event fields",
+        "Canonical field order is explicitly listed",
+        "Typecheck passes"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "JD-006",
+      "title": "Document signature algorithm",
+      "description": "As an implementer, I want signature algorithm and input to be explicit.",
+      "acceptanceCriteria": [
+        "spec/protocol.md specifies Ed25519 over event_id bytes",
+        "Signature verification rules are stated",
+        "Typecheck passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "JD-007",
+      "title": "Document transport and handshake",
+      "description": "As a protocol developer, I want transport and handshake steps to be explicit.",
+      "acceptanceCriteria": [
+        "spec/protocol.md specifies QUIC as primary transport and WebSocket fallback",
+        "Protocol version negotiation is defined",
+        "Noise upgrade step is defined",
+        "Typecheck passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "JD-008",
+      "title": "Specify capability token format",
+      "description": "As a protocol developer, I want capability token fields and chaining rules defined.",
+      "acceptanceCriteria": [
+        "spec/protocol.md defines token fields: issuer, subject, capability, caveats, signature",
+        "spec/protocol.md defines chaining and validation rules",
+        "Typecheck passes"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "JD-009",
+      "title": "Add capability token schema",
+      "description": "As a protocol developer, I want capability token structures in schema where needed.",
+      "acceptanceCriteria": [
+        "spec/schema.fbs adds capability token types or tables",
+        "Schema includes caveats fields for time bounds and usage limits",
+        "Typecheck passes"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "JD-010",
+      "title": "Specify Lightning invoice attachments",
+      "description": "As a protocol developer, I want invoice attachment for kind 10002 defined.",
+      "acceptanceCriteria": [
+        "spec/protocol.md defines invoice attachment fields for kind 10002",
+        "spec/protocol.md defines validation rules for invoice attachment",
+        "Typecheck passes"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "JD-011",
+      "title": "Schema support for invoice attachments",
+      "description": "As a protocol developer, I want schema support for invoice attachment data.",
+      "acceptanceCriteria": [
+        "spec/schema.fbs adds invoice attachment structure",
+        "Fields include invoice string and optional metadata",
+        "Typecheck passes"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "JD-012",
+      "title": "Add test vectors for valid events",
+      "description": "As an implementer, I want valid event vectors to confirm hashing and signatures.",
+      "acceptanceCriteria": [
+        "spec/test-vectors includes valid events for each kind range",
+        "Each vector includes expected event_id and signature",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "JD-013",
+      "title": "Add test vectors for invalid events",
+      "description": "As an implementer, I want invalid event vectors to verify rejection rules.",
+      "acceptanceCriteria": [
+        "spec/test-vectors includes invalid signature cases",
+        "spec/test-vectors includes invalid event_id cases",
+        "spec/test-vectors includes out-of-window timestamp cases",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 13,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "JD-014",
+      "title": "Add capability token test vectors",
+      "description": "As an implementer, I want valid and invalid capability chains in test vectors.",
+      "acceptanceCriteria": [
+        "spec/test-vectors includes valid capability chains",
+        "spec/test-vectors includes invalid chains (bad sig, expired, over-limit)",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 14,
+      "passes": false,
+      "notes": ""
+    }
+  ]
+}

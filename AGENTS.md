@@ -123,7 +123,7 @@ Pull requests should include:
 - **Python SDK:** Native Python (shares codebase with relay)
 - **TypeScript SDK:** Native TypeScript with WASM crypto bundle
 
-This ensures `pip install` and `npm install` work immediately (no Rust toolchain required), while maintaining debuggability and ecosystem alignment.
+This ensures `pip install` and `npm install` work immediately while maintaining debuggability and ecosystem alignment.
 
 ## Agent-Specific Instructions
 - Keep changes small and reviewable.

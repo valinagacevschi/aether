@@ -1,0 +1,1 @@
+2026-02-02: Completed JD-001 by adding spec/schema.fbs with Event/Tag tables, field size comments (event_id/pubkey/sig), and tag limits (max 100 tags, max 1KB per tag). Assumed tag limits from PRD FR-1.
