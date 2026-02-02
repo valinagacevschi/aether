@@ -68,7 +68,7 @@ cd implementations/relay
 pip install -e .
 
 # Run relay
-aether-relay --port 443 --storage ./data
+python -m aether_relay.server --ws-port 9000 --quic-port 4433
 ```
 
 ## Usage
@@ -77,32 +77,31 @@ aether-relay --port 443 --storage ./data
 
 ```python
 import asyncio
-from aether import AetherClient, EventKind, Filter
+from aether import Client, compute_event_id, generate_keypair, sign
 
 async def main():
-    # Connect to relay
-    client = await AetherClient.connect("relay.example.com:443")
-    
-    # Generate keypair
-    keypair = client.generate_keypair()
-    
-    # Create and publish an event
-    event = await client.create_event(
-        kind=EventKind.IMMUTABLE(0),  # Agent metadata
-        content=b'{"name":"agent-1"}',
-        keypair=keypair
+    client = Client()
+    await client.connect(["ws://127.0.0.1:9000"])
+
+    private_key, pubkey = generate_keypair()
+    content = b'{"name":"agent-1"}'
+    event_id = compute_event_id(
+        pubkey=pubkey,
+        created_at=1,
+        kind=1,
+        tags=[],
+        content=content,
     )
+    event = {
+        "event_id": event_id,
+        "pubkey": pubkey,
+        "kind": 1,
+        "created_at": 1,
+        "tags": [],
+        "content": content.decode("utf-8"),
+        "sig": sign(event_id, private_key),
+    }
     await client.publish(event)
-    
-    # Subscribe to events
-    filter = Filter(
-        kinds=[EventKind.EPHEMERAL(29999)],
-        tags={"c": ["vision"]},
-        since=timestamp
-    )
-    
-    async for event in client.subscribe(filter):
-        print(f"Received event: {event}")
 
 asyncio.run(main())
 ```
@@ -110,33 +109,32 @@ asyncio.run(main())
 ### TypeScript SDK
 
 ```typescript
-import { AetherClient, EventKind, Filter } from 'aether-sdk';
+import { AetherClient } from "@aether-protocol/typescript-sdk";
+import { computeEventId, generateKeypair, signEventId } from "@aether-protocol/typescript-sdk/dist/crypto";
 
 async function main() {
-  // Connect to relay
-  const client = await AetherClient.connect('relay.example.com:443');
-  
-  // Generate keypair
-  const keypair = client.generateKeypair();
-  
-  // Create and publish an event
-  const event = await client.createEvent({
-    kind: EventKind.IMMUTABLE(0), // Agent metadata
-    content: Buffer.from('{"name":"agent-1"}'),
-    keypair
+  const client = new AetherClient();
+  await client.connect(["ws://127.0.0.1:9000"]);
+
+  const { privateKey, publicKey } = await generateKeypair();
+  const content = Buffer.from('{"name":"agent-1"}');
+  const eventId = computeEventId({
+    pubkey: publicKey,
+    createdAt: 1,
+    kind: 1,
+    tags: [],
+    content,
   });
-  await client.publish(event);
-  
-  // Subscribe to events
-  const filter = new Filter({
-    kinds: [EventKind.EPHEMERAL(29999)],
-    tags: { c: ['vision'] },
-    since: timestamp
+  const sig = await signEventId(eventId, privateKey);
+  await client.publish({
+    event_id: Buffer.from(eventId).toString("hex"),
+    pubkey: Buffer.from(publicKey).toString("hex"),
+    kind: 1,
+    created_at: 1,
+    tags: [],
+    content: content.toString("utf-8"),
+    sig: Buffer.from(sig).toString("hex"),
   });
-  
-  for await (const event of client.subscribe(filter)) {
-    console.log('Received event:', event);
-  }
 }
 
 main();

@@ -1,0 +1,157 @@
+{
+  "project": "Aether Protocol",
+  "branchName": "ralph/aether-integration-v1",
+  "description": "Cross-language integration tests, benchmarks, and docs",
+  "userStories": [
+    {
+      "id": "JD-001",
+      "title": "Integration test harness",
+      "description": "As a maintainer, I want a harness to run cross-language tests.",
+      "acceptanceCriteria": [
+        "integration-tests can start relay and SDK clients",
+        "Harness documents required env vars and ports",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 1,
+      "passes": true,
+      "notes": "Added integration-tests/run_relay.py and integration-tests/README.md documenting env/ports."
+    },
+    {
+      "id": "JD-002",
+      "title": "Interop: Python publish to relay, TypeScript subscribe",
+      "description": "As a maintainer, I want a test where Python publishes and TypeScript receives.",
+      "acceptanceCriteria": [
+        "Test sends event from Python SDK through relay",
+        "TypeScript SDK receives event and verifies event_id",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 2,
+      "passes": true,
+      "notes": "Added interop harness integration-tests/run_interop.py and node/python scripts for publish/subscribe."
+    },
+    {
+      "id": "JD-003",
+      "title": "Interop: TypeScript publish to relay, Python subscribe",
+      "description": "As a maintainer, I want a test where TypeScript publishes and Python receives.",
+      "acceptanceCriteria": [
+        "Test sends event from TypeScript SDK through relay",
+        "Python SDK receives event and verifies event_id",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 3,
+      "passes": true,
+      "notes": "Interop harness runs TS publish -> Python subscribe via integration-tests/run_interop.py and scripts."
+    },
+    {
+      "id": "JD-004",
+      "title": "Interop: filter behavior",
+      "description": "As a maintainer, I want filter tests to match spec across SDKs.",
+      "acceptanceCriteria": [
+        "Test covers kind, pubkey prefix, tags, since, until",
+        "Same events yield same results in Python and TypeScript",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 4,
+      "passes": true,
+      "notes": "Added filter interop harness integration-tests/run_filters.py."
+    },
+    {
+      "id": "JD-005",
+      "title": "Benchmark: relay throughput",
+      "description": "As a maintainer, I want relay throughput benchmarks.",
+      "acceptanceCriteria": [
+        "Benchmark script measures events/sec on relay",
+        "Benchmark outputs P50/P99 latency",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 5,
+      "passes": true,
+      "notes": "Added relay benchmark script integration-tests/bench/bench_relay.py."
+    },
+    {
+      "id": "JD-006",
+      "title": "Benchmark: Python SDK publish rate",
+      "description": "As a maintainer, I want Python SDK publish benchmarks.",
+      "acceptanceCriteria": [
+        "Benchmark script measures publishes/sec",
+        "Benchmark outputs P50/P99 latency",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 6,
+      "passes": true,
+      "notes": "Added Python SDK benchmark script integration-tests/bench/bench_python_sdk.py."
+    },
+    {
+      "id": "JD-007",
+      "title": "Benchmark: TypeScript SDK publish rate",
+      "description": "As a maintainer, I want TypeScript SDK publish benchmarks.",
+      "acceptanceCriteria": [
+        "Benchmark script measures publishes/sec",
+        "Benchmark outputs P50/P99 latency",
+        "Typecheck passes",
+        "Tests pass"
+      ],
+      "priority": 7,
+      "passes": true,
+      "notes": "Added TypeScript SDK benchmark script integration-tests/bench/bench_ts_sdk.js."
+    },
+    {
+      "id": "JD-008",
+      "title": "Docs: relay deployment quickstart",
+      "description": "As a developer, I want minimal relay deployment instructions.",
+      "acceptanceCriteria": [
+        "README or docs include relay install/run steps",
+        "Docs list required ports and config values",
+        "Typecheck passes"
+      ],
+      "priority": 8,
+      "passes": true,
+      "notes": "Updated README.md with relay quickstart instructions."
+    },
+    {
+      "id": "JD-009",
+      "title": "Docs: Python SDK quickstart",
+      "description": "As a developer, I want Python SDK quickstart examples.",
+      "acceptanceCriteria": [
+        "Docs include Python publish/subscribe example",
+        "Docs include key generation example",
+        "Typecheck passes"
+      ],
+      "priority": 9,
+      "passes": true,
+      "notes": "Updated README.md with Python SDK quickstart example."
+    },
+    {
+      "id": "JD-010",
+      "title": "Docs: TypeScript SDK quickstart",
+      "description": "As a developer, I want TypeScript SDK quickstart examples.",
+      "acceptanceCriteria": [
+        "Docs include TypeScript publish/subscribe example",
+        "Docs include key generation example",
+        "Typecheck passes"
+      ],
+      "priority": 10,
+      "passes": true,
+      "notes": "Updated README.md with TypeScript SDK quickstart example."
+    },
+    {
+      "id": "JD-011",
+      "title": "Docs: framework integration examples",
+      "description": "As a developer, I want LangChain and Vercel AI SDK integration examples.",
+      "acceptanceCriteria": [
+        "Docs include LangChain integration example",
+        "Docs include Vercel AI SDK integration example",
+        "Typecheck passes"
+      ],
+      "priority": 11,
+      "passes": true,
+      "notes": "README.md already includes LangChain/Vercel AI SDK examples (existing content)."
+    }
+  ]
+}
