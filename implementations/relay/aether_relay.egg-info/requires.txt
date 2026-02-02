@@ -1,0 +1,10 @@
+PyNaCl
+blake3
+
+[dev]
+black
+mypy
+pytest
+PyYAML
+ruff
+types-PyYAML
