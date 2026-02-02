@@ -16,3 +16,9 @@ Replaceable key: `(pubkey, kind)`.
 Conflict resolution rules:
 - Highest `created_at` wins.
 - If `created_at` ties, choose the lexicographically greatest `event_id` (byte-order).
+
+## Parameterized Conflict Resolution
+
+Parameterized key: `(pubkey, kind, d-tag)`.
+
+The `d-tag` is the value of the tag whose key is `d` in the event's `tags` array.
