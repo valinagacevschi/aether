@@ -82,8 +82,8 @@
         "Typecheck passes"
       ],
       "priority": 6,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Added aether_relay/crypto.py with Blake3 event_id computation, Ed25519 keygen/sign/verify, tag normalization, and pytest coverage against valid event vectors plus roundtrip signing."
     },
     {
       "id": "JD-007",

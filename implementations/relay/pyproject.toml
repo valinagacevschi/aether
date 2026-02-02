@@ -7,6 +7,19 @@ name = "aether-relay"
 version = "0.1.0"
 description = "Aether relay implementation"
 requires-python = ">=3.10"
+dependencies = [
+  "PyNaCl",
+  "blake3",
+]
+
+[project.optional-dependencies]
+dev = [
+  "black",
+  "mypy",
+  "pytest",
+  "PyYAML",
+  "ruff",
+]
 
 [tool.setuptools.packages.find]
 where = ["."]
