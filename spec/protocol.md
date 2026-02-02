@@ -12,7 +12,7 @@ Field types and limits:
 - `kind`: uint16. Storage policy ranges are defined below; relays SHOULD reject kinds outside 0-39999 for interoperability.
 - `created_at`: uint64, Unix timestamp in nanoseconds.
 - `tags`: array of Tag.
-- `content`: variable-length opaque bytes. Maximum size is implementation-defined.
+- `content`: variable-length opaque bytes. Maximum size is implementation-defined (RECOMMENDED max: 16MB).
 - `sig`: 64 bytes, Ed25519 signature over `event_id`.
 
 Event ID calculation (canonical serialization, network byte order):
@@ -33,6 +33,11 @@ Storage semantics by kind:
 - 30000-39999 (PARAMETERIZED_REPLACEABLE): Keep latest per (`pubkey`, `kind`, `d` tag value).
 
 Relays MAY apply additional policies, but these ranges MUST be supported for interoperability.
+
+Conflict resolution:
+- Replaceable events: latest `created_at` wins; ties break on lexicographic `event_id`.
+- Parameterized events: key is (`pubkey`, `kind`, `d` tag value); latest `created_at` wins, ties break on lexicographic `event_id`.
+- The `d` tag is the tag with key `"d"` and its first value (if present); empty string if missing.
 
 ## Tag Filtering
 
@@ -55,6 +60,12 @@ Events are transmitted as length-prefixed FlatBuffers messages.
 
 Transport is stream-based and transport-agnostic. QUIC is recommended; TCP/WebSocket are acceptable.
 
+Handshake and versioning:
+1. Client opens QUIC connection (primary) or WebSocket (fallback).
+2. Client sends a `HELLO` frame containing protocol version and supported features.
+3. Relay responds with `WELCOME` + negotiated version.
+4. If supported, peers upgrade to Noise (XX) after handshake for forward secrecy.
+
 ## Validation
 
 A relay/client validating an Event MUST:
@@ -64,3 +75,26 @@ A relay/client validating an Event MUST:
 4. Enforce timestamp window (recommended: reject > 60s in the future).
 
 Relays SHOULD treat duplicate `event_id` as idempotent and ignore after first acceptance.
+
+## Capability Tokens (Delegation)
+
+Capability token fields:
+- `issuer`: 32-byte Ed25519 pubkey (issuer)
+- `subject`: 32-byte Ed25519 pubkey (delegate)
+- `capability`: string (URI-style, e.g., `service:resource:action`)
+- `caveats`: map of constraints (time bounds, usage limits, IP restrictions)
+- `sig`: 64-byte Ed25519 signature over token payload hash
+
+Token validation:
+1. Token payload hash = `BLAKE3(canonical_json(issuer, subject, capability, caveats))`
+2. Signature must verify against `issuer`.
+3. Chains validate by matching `subject` to next `issuer`.
+
+## Capability Offers with Lightning Invoices (kind 10002)
+
+For kind `10002`, the `content` field MUST contain a serialized InvoiceAttachment structure:
+- `invoice` (BOLT11 string)
+- Optional `memo`
+- Optional `amount_msat`
+
+Relays do not validate invoices beyond size/format.

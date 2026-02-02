@@ -1,18 +1,44 @@
 namespace Aether;
 
 table Tag {
+  // key: 1-8 ASCII chars; values: max 16 entries, <=1024 bytes per value.
   key: string;
   values: [string];
 }
 
 table Event {
+  // event_id: 32 bytes Blake3 hash of canonical serialization.
   event_id: [ubyte] (size: 32);
+  // pubkey: 32-byte Ed25519 public key.
   pubkey: [ubyte] (size: 32);
+  // kind: uint16 range 0..39999.
   kind: uint16;
+  // created_at: uint64 nanosecond timestamp.
   created_at: uint64;
   tags: [Tag];
+  // content: opaque bytes (RECOMMENDED max 16MB).
   content: [ubyte];
+  // sig: 64-byte Ed25519 signature over event_id.
   sig: [ubyte] (size: 64);
+}
+
+table CapabilityCaveat {
+  key: string;
+  value: string;
+}
+
+table CapabilityToken {
+  issuer: [ubyte] (size: 32);
+  subject: [ubyte] (size: 32);
+  capability: string;
+  caveats: [CapabilityCaveat];
+  sig: [ubyte] (size: 64);
+}
+
+table InvoiceAttachment {
+  invoice: string;
+  memo: string;
+  amount_msat: uint64;
 }
 
 root_type Event;
