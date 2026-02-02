@@ -40,8 +40,9 @@
         "Typecheck passes"
       ],
       "priority": 3,
-      "passes": false,
-      "notes": ""
+      "priority": 3,
+      "passes": true,
+      "notes": "Defined replaceable key as (pubkey, kind) and conflict resolution rules in spec/protocol.md."
     },
     {
       "id": "JD-004",
