@@ -97,8 +97,8 @@
         "Typecheck passes"
       ],
       "priority": 7,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Added validation.py enforcing event_id match, signature verification, kind range, and timestamp window; added pytest coverage for failure cases and vectors."
     },
     {
       "id": "JD-008",

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TypedDict, cast
 
 import yaml
 
@@ -12,6 +13,16 @@ from aether_relay.crypto import (
     sign,
     verify,
 )
+
+
+class EventVector(TypedDict):
+    pubkey: str
+    created_at: int | str
+    kind: int | str
+    tags: list[object]
+    content: str
+    event_id: str
+    sig: str
 
 
 def test_generate_keypair() -> None:
@@ -53,7 +64,7 @@ def test_compute_event_id_vectors() -> None:
         )
 
 
-def _load_vectors() -> list[dict[str, object]]:
+def _load_vectors() -> list[EventVector]:
     root = Path(__file__).resolve().parents[3]
     vectors_path = root / "spec" / "test-vectors" / "valid-events.yaml"
     with vectors_path.open("r", encoding="utf-8") as handle:
@@ -61,4 +72,7 @@ def _load_vectors() -> list[dict[str, object]]:
 
     if not isinstance(data, list):
         raise AssertionError("valid-events.yaml must be a list")
-    return data
+    for item in data:
+        if not isinstance(item, dict):
+            raise AssertionError("valid-events.yaml entries must be mappings")
+    return cast(list[EventVector], data)

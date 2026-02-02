@@ -19,6 +19,7 @@ dev = [
   "pytest",
   "PyYAML",
   "ruff",
+  "types-PyYAML",
 ]
 
 [tool.setuptools.packages.find]
