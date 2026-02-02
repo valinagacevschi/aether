@@ -1,0 +1,9 @@
+{
+  "name": "aether-protocol",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "typecheck": "pnpm -C implementations/typescript-sdk typecheck && python -m mypy implementations/relay/aether_relay implementations/python-sdk/aether",
+    "test": "pnpm -C implementations/typescript-sdk test && python -m pytest implementations/relay/tests implementations/python-sdk/tests"
+  }
+}

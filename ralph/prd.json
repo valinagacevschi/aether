@@ -114,7 +114,7 @@
       ],
       "priority": 8,
       "passes": true,
-      "notes": "Added in-memory store with immutable/replaceable/ephemeral/parameterized semantics plus query filtering and storage tests."
+      "notes": "Renamed replaceable/parameterized keys to satisfy mypy; added root package.json scripts and TypeScript pnpm lock so pnpm typecheck/test run."
     },
     {
       "id": "JD-009",
@@ -166,8 +166,8 @@
         "Typecheck passes"
       ],
       "priority": 12,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Added aether/crdt with minimal GCounter, PNCounter, LWWRegister, and ORSet helpers plus tests."
     }
   ]
 }

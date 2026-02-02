@@ -41,18 +41,18 @@ class InMemoryEventStore:
             self._immutable[stored.event_id] = stored
             return True
         if kind in REPLACEABLE_RANGE:
-            key = (stored.pubkey, stored.kind)
-            existing = self._replaceable.get(key)
+            replaceable_key = (stored.pubkey, stored.kind)
+            existing = self._replaceable.get(replaceable_key)
             if existing and stored.created_at <= existing.created_at:
                 return False
-            self._replaceable[key] = stored
+            self._replaceable[replaceable_key] = stored
             return True
         if kind in PARAMETERIZED_RANGE:
-            key = (stored.pubkey, stored.kind, stored.d_tag)
-            existing = self._parameterized.get(key)
+            parameterized_key = (stored.pubkey, stored.kind, stored.d_tag)
+            existing = self._parameterized.get(parameterized_key)
             if existing and stored.created_at <= existing.created_at:
                 return False
-            self._parameterized[key] = stored
+            self._parameterized[parameterized_key] = stored
             return True
 
         raise ValueError("kind out of supported range")
