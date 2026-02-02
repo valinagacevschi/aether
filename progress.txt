@@ -1,4 +1,2 @@
-2026-02-02: Completed JD-001 by adding spec/schema.fbs with Event/Tag tables, field size comments (event_id/pubkey/sig), and tag limits (max 100 tags, max 1KB per tag). Assumed tag limits from PRD FR-1.
-2026-02-02: Completed JD-002 by adding spec/protocol.md with kind ranges and storage semantics. Note: 30000-39999 described as parameterized replaceable without defining parameter key (reserved for JD-004).
-2026-02-02: Completed JD-003 by defining replaceable key (pubkey, kind) and conflict resolution rules (latest created_at wins, ties by lexicographically greatest event_id) in spec/protocol.md.
-2026-02-02: Completed JD-004 by defining parameterized conflict resolution with key (pubkey, kind, d-tag) and d-tag tag key 'd' in spec/protocol.md.
+2026-02-02: Completed JD-001 by adding spec/protocol.md (sections for Event Structure, Event Kinds, Tag Filtering, Transport, Validation + field limits). pnpm typecheck and pnpm test failed: no package.json in repo root.
+2026-02-02: Completed JD-002 by adding spec/schema.fbs (FlatBuffers Event/Tag with fixed-size byte vectors). pnpm typecheck/test failed: no package.json in repo root. Next: JD-003 valid vectors.

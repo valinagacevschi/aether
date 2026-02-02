@@ -1,38 +1,18 @@
-// Aether Protocol FlatBuffers schema (spec source of truth)
-
-// Event tags carry routing metadata and filtering keys.
-// Limits (FR-1): max 100 tags per event; max 1KB per tag.
-// Tag values are UTF-8 strings; implementations SHOULD enforce size limits.
+namespace Aether;
 
 table Tag {
-  // 1-8 ASCII characters (alphanumeric + underscore)
   key: string;
-
-  // Hierarchical values (max 16 values, 1024 bytes each)
   values: [string];
 }
 
 table Event {
-  // 32B Blake3 hash of canonical fields (event_id)
-  event_id: [ubyte];
-
-  // 32B Ed25519 public key
-  pubkey: [ubyte];
-
-  // Storage semantics (0-65535)
+  event_id: [ubyte] (size: 32);
+  pubkey: [ubyte] (size: 32);
   kind: uint16;
-
-  // Unix timestamp in nanoseconds
   created_at: uint64;
-
-  // Routing metadata (max 100 tags, max 1KB per tag)
   tags: [Tag];
-
-  // Opaque payload (max 16MB)
   content: [ubyte];
-
-  // 64B Ed25519 signature over event_id
-  sig: [ubyte];
+  sig: [ubyte] (size: 64);
 }
 
 root_type Event;

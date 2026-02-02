@@ -1,41 +1,42 @@
 {
   "project": "Aether Protocol",
   "branchName": "ralph/aether-protocol-v1",
-  "description": "Aether Protocol v1.0 - spec-first relay and SDK implementations for Python and TypeScript",
+  "description": "Aether Protocol v1.0 - decentralized binary messaging for autonomous agents",
   "userStories": [
     {
       "id": "JD-001",
-      "title": "Finalize core FlatBuffers event schema",
-      "description": "As a protocol developer, I want the FlatBuffers schema to define the event fields, sizes, and kind ranges so implementations are consistent.",
+      "title": "Create core protocol spec document",
+      "description": "As a protocol engineer, I want a spec-first protocol document so implementations can follow a single source of truth.",
       "acceptanceCriteria": [
-        "Update spec/schema.fbs with event fields, sizes, and kind ranges",
-        "Tags and content constraints are documented in the schema comments",
+        "Add `spec/protocol.md` with sections for Event Structure, Event Kinds, Tag Filtering, Transport, and Validation",
+        "Document field types and limits for `event_id`, `pubkey`, `kind`, `created_at`, `tags`, `content`, `sig`",
         "Typecheck passes"
       ],
       "priority": 1,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Added spec/protocol.md covering required sections and field limits."
     },
     {
       "id": "JD-002",
-      "title": "Document event kinds and storage semantics",
-      "description": "As a protocol developer, I want protocol.md to define immutable, replaceable, ephemeral, and parameterized semantics so relays and SDKs match behavior.",
+      "title": "Define FlatBuffers schema for events",
+      "description": "As a protocol engineer, I want a FlatBuffers schema so events can be serialized consistently across SDKs.",
       "acceptanceCriteria": [
-        "spec/protocol.md defines the four kind ranges and their storage semantics",
-        "Replaceable and parameterized conflict resolution rules are explicit",
+        "Add `spec/schema.fbs` defining `Event` and `Tag` tables with fields matching PRD FR-1",
+        "Schema uses fixed-size byte vectors for `event_id`, `pubkey`, and `sig`",
         "Typecheck passes"
       ],
       "priority": 2,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Added spec/schema.fbs with Event/Tag tables and fixed-size byte vectors."
     },
     {
       "id": "JD-003",
-      "title": "Document transport and handshake",
-      "description": "As a protocol developer, I want protocol.md to specify QUIC, WebSocket fallback, and Noise upgrade so clients and relays interoperate.",
+      "title": "Add valid event test vectors",
+      "description": "As a maintainer, I want shared valid test vectors so all implementations can verify signing and hashing.",
       "acceptanceCriteria": [
-        "spec/protocol.md specifies QUIC as primary transport and WebSocket fallback",
-        "Handshake includes protocol version negotiation and Noise upgrade steps",
+        "Add `spec/test-vectors/valid-events.yaml` with at least 3 valid events",
+        "Each vector includes `pubkey`, `content`, `tags`, `created_at`, `kind`, `event_id`, and `sig`",
+        "Tests pass",
         "Typecheck passes"
       ],
       "priority": 3,
@@ -44,13 +45,13 @@
     },
     {
       "id": "JD-004",
-      "title": "Create core test vectors for event hashing and signing",
-      "description": "As an implementer, I want shared test vectors for event_id, signatures, and kinds so all implementations are consistent.",
+      "title": "Add invalid event test vectors",
+      "description": "As a maintainer, I want invalid test vectors so implementations can reject bad events consistently.",
       "acceptanceCriteria": [
-        "spec/test-vectors includes valid events for immutable, replaceable, ephemeral, and parameterized kinds",
-        "Vectors include expected event_id and signature values",
-        "Typecheck passes",
-        "Tests pass"
+        "Add `spec/test-vectors/invalid-events.yaml` with at least 3 invalid cases",
+        "Invalid cases include at least one bad signature and one mismatched `event_id`",
+        "Tests pass",
+        "Typecheck passes"
       ],
       "priority": 4,
       "passes": false,
@@ -58,14 +59,12 @@
     },
     {
       "id": "JD-005",
-      "title": "Relay validation pipeline",
-      "description": "As a relay operator, I want the relay to validate signatures, event_id, timestamps, and kind policies so invalid data is rejected.",
+      "title": "Scaffold Python relay package",
+      "description": "As a developer, I want a Python relay package scaffold to start implementing relay features.",
       "acceptanceCriteria": [
-        "Relay validates Ed25519 signature correctness",
-        "Relay recomputes and checks event_id hash",
-        "Relay enforces timestamp window (+/- 60s) and kind policy",
-        "Typecheck passes",
-        "Tests pass"
+        "Create `implementations/relay/pyproject.toml` and package directory `implementations/relay/aether_relay/`",
+        "Include an importable `aether_relay/__init__.py` and a minimal `server.py` entrypoint",
+        "Typecheck passes"
       ],
       "priority": 5,
       "passes": false,
@@ -73,15 +72,14 @@
     },
     {
       "id": "JD-006",
-      "title": "Relay storage semantics and indexing",
-      "description": "As a relay operator, I want correct storage behavior and indexes so queries are fast and semantics are correct.",
+      "title": "Implement Python crypto utilities",
+      "description": "As a developer, I want shared crypto utilities so event signing and verification are consistent.",
       "acceptanceCriteria": [
-        "Immutable events are stored with retention policy",
-        "Replaceable and parameterized events keep only the latest per key",
-        "Ephemeral events are broadcast-only and not stored",
-        "Indexes exist for pubkey, kind, and tags",
-        "Typecheck passes",
-        "Tests pass"
+        "Add keypair generation, event_id computation, sign, and verify functions in `implementations/relay/aether_relay/crypto.py`",
+        "Functions validate against vectors in `spec/test-vectors/valid-events.yaml`",
+        "Add unit tests covering keygen, sign/verify, and event_id computation",
+        "Tests pass",
+        "Typecheck passes"
       ],
       "priority": 6,
       "passes": false,
@@ -89,13 +87,14 @@
     },
     {
       "id": "JD-007",
-      "title": "Relay subscription filtering",
-      "description": "As a client, I want relay subscriptions to filter by kind, pubkey prefix, tags, and time range.",
+      "title": "Add event validation logic",
+      "description": "As a relay, I want to validate events so invalid or replayed messages are rejected.",
       "acceptanceCriteria": [
-        "Subscription filters support kind, pubkey prefix, tags, since, and until",
-        "Filtering behavior matches protocol.md",
-        "Typecheck passes",
-        "Tests pass"
+        "Add validation function enforcing signature, event_id match, and timestamp window (\u00b160s) in `implementations/relay/aether_relay/validation.py`",
+        "Validation uses kind range policy (0-39999) and rejects out-of-range kinds",
+        "Add unit tests for each validation failure case",
+        "Tests pass",
+        "Typecheck passes"
       ],
       "priority": 7,
       "passes": false,
@@ -103,14 +102,15 @@
     },
     {
       "id": "JD-008",
-      "title": "Relay QUIC and WebSocket transports",
-      "description": "As a relay operator, I want QUIC as primary transport and WebSocket fallback for browser clients.",
+      "title": "Implement in-memory relay storage semantics",
+      "description": "As a relay, I need storage semantics for immutable, replaceable, ephemeral, and parameterized events.",
       "acceptanceCriteria": [
-        "Relay exposes QUIC endpoint for protocol traffic",
-        "Relay exposes WebSocket fallback for browsers",
-        "Handshake includes protocol version negotiation",
-        "Typecheck passes",
-        "Tests pass"
+        "Add in-memory store with insert/query logic for the four event kinds in `implementations/relay/aether_relay/storage/`",
+        "Replaceable events overwrite prior events by `(pubkey, kind)`; parameterized events by `(pubkey, kind, d-tag)`",
+        "Ephemeral events are not stored after broadcast",
+        "Add unit tests covering each storage semantic",
+        "Tests pass",
+        "Typecheck passes"
       ],
       "priority": 8,
       "passes": false,
@@ -118,13 +118,12 @@
     },
     {
       "id": "JD-009",
-      "title": "Relay rate limiting and size limits",
-      "description": "As a relay operator, I want rate limits and max message size enforcement to prevent abuse.",
+      "title": "Scaffold Python SDK package",
+      "description": "As a developer, I want a Python SDK scaffold to build client features.",
       "acceptanceCriteria": [
-        "Per-pubkey rate limiting is enforced",
-        "Max message size (16MB) is enforced",
-        "Typecheck passes",
-        "Tests pass"
+        "Create `implementations/python-sdk/pyproject.toml` and package directory `implementations/python-sdk/aether/`",
+        "Include `aether/__init__.py` and a minimal `client.py` stub with async connect/publish signatures",
+        "Typecheck passes"
       ],
       "priority": 9,
       "passes": false,
@@ -132,13 +131,12 @@
     },
     {
       "id": "JD-010",
-      "title": "Relay gossipsub mesh support",
-      "description": "As a relay operator, I want optional gossipsub forwarding to mesh relays.",
+      "title": "Scaffold TypeScript SDK package",
+      "description": "As a developer, I want a TypeScript SDK scaffold to build client features.",
       "acceptanceCriteria": [
-        "Relay can be configured to enable gossipsub",
-        "Events are forwarded to mesh peers when enabled",
-        "Typecheck passes",
-        "Tests pass"
+        "Create `implementations/typescript-sdk/package.json` and `implementations/typescript-sdk/tsconfig.json`",
+        "Add `src/client.ts` with exported client class stub and placeholder connect/publish methods",
+        "Typecheck passes"
       ],
       "priority": 10,
       "passes": false,
@@ -146,13 +144,13 @@
     },
     {
       "id": "JD-011",
-      "title": "Python SDK key management",
-      "description": "As a Python developer, I want keypair generation and import/export so I can manage identities.",
+      "title": "Add Python conformance test runner",
+      "description": "As a maintainer, I want a conformance runner so Python implementations can validate against shared vectors.",
       "acceptanceCriteria": [
-        "Python SDK generates Ed25519 keypairs",
-        "Import/export works for hex and bech32 formats",
-        "Typecheck passes",
-        "Tests pass"
+        "Add `implementations/relay/tests/test_vectors.py` to load YAML vectors and validate crypto + event_id",
+        "Runner reads both valid and invalid vector files and asserts correct pass/fail behavior",
+        "Tests pass",
+        "Typecheck passes"
       ],
       "priority": 11,
       "passes": false,
@@ -160,217 +158,14 @@
     },
     {
       "id": "JD-012",
-      "title": "Python SDK event signing and event_id",
-      "description": "As a Python developer, I want event_id computation and signing helpers so I can produce valid events.",
+      "title": "Add CRDT helper stubs in Python SDK",
+      "description": "As an SDK user, I want CRDT helper stubs so I can integrate counters and registers consistently.",
       "acceptanceCriteria": [
-        "Python SDK computes event_id via Blake3 per spec",
-        "Python SDK signs and verifies events with Ed25519",
-        "Matches test vectors",
-        "Typecheck passes",
-        "Tests pass"
-      ],
-      "priority": 12,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "JD-013",
-      "title": "Python SDK connection management",
-      "description": "As a Python developer, I want pooled connections, failover, backoff, and 0-RTT resumption.",
-      "acceptanceCriteria": [
-        "SDK pools connections across 3-5 relays",
-        "Automatic failover and exponential backoff are implemented",
-        "0-RTT resumption is supported where transport allows",
-        "Typecheck passes",
-        "Tests pass"
-      ],
-      "priority": 13,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "JD-014",
-      "title": "Python SDK publish/subscribe with filters",
-      "description": "As a Python developer, I want publish/subscribe APIs with filtering so I can build agent workflows.",
-      "acceptanceCriteria": [
-        "Publish API sends events to connected relays",
-        "Subscribe API accepts filters: kind, pubkey prefix, tags, since, until",
-        "Typecheck passes",
-        "Tests pass"
-      ],
-      "priority": 14,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "JD-015",
-      "title": "Python SDK CRDT helpers",
-      "description": "As a Python developer, I want CRDT helper types for common patterns.",
-      "acceptanceCriteria": [
-        "SDK provides G-Counter, PN-Counter, LWW-Register, and OR-Set helpers",
-        "Examples cover merge and serialization behavior",
-        "Typecheck passes",
-        "Tests pass"
-      ],
-      "priority": 15,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "JD-016",
-      "title": "TypeScript SDK crypto and key management",
-      "description": "As a TypeScript developer, I want key management and crypto helpers so I can create and verify events.",
-      "acceptanceCriteria": [
-        "TypeScript SDK provides keypair generation and import/export",
-        "Event_id computation and signature verify match test vectors",
-        "WASM crypto bundle is used where required",
-        "Typecheck passes",
-        "Tests pass"
-      ],
-      "priority": 16,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "JD-017",
-      "title": "TypeScript SDK connection management",
-      "description": "As a TypeScript developer, I want pooled connections, failover, backoff, and browser fallback.",
-      "acceptanceCriteria": [
-        "SDK supports WebSocket in browsers and QUIC/WebTransport in Node where available",
-        "Connection pooling and failover are implemented",
-        "Exponential backoff and session resumption are implemented where transport allows",
-        "Typecheck passes",
-        "Tests pass"
-      ],
-      "priority": 17,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "JD-018",
-      "title": "TypeScript SDK publish/subscribe with filters",
-      "description": "As a TypeScript developer, I want publish/subscribe APIs with filtering so I can build agent workflows.",
-      "acceptanceCriteria": [
-        "Publish API sends events to connected relays",
-        "Subscribe API accepts filters: kind, pubkey prefix, tags, since, until",
-        "Typecheck passes",
-        "Tests pass"
-      ],
-      "priority": 18,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "JD-019",
-      "title": "TypeScript SDK CRDT helpers",
-      "description": "As a TypeScript developer, I want CRDT helper types for common patterns.",
-      "acceptanceCriteria": [
-        "SDK provides G-Counter, PN-Counter, LWW-Register, and OR-Set helpers",
-        "Examples cover merge and serialization behavior",
-        "Typecheck passes",
-        "Tests pass"
-      ],
-      "priority": 19,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "JD-020",
-      "title": "Capability token spec and test vectors",
-      "description": "As a protocol developer, I want capability token format and test vectors so delegation is interoperable.",
-      "acceptanceCriteria": [
-        "spec/protocol.md defines capability token fields, caveats, and chaining",
-        "spec/schema.fbs includes capability token structures if needed",
-        "spec/test-vectors includes valid and invalid capability chains",
-        "Typecheck passes",
-        "Tests pass"
-      ],
-      "priority": 20,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "JD-021",
-      "title": "Capability tokens in Python and TypeScript SDKs",
-      "description": "As an SDK user, I want to create, attenuate, and verify capability chains.",
-      "acceptanceCriteria": [
-        "Python SDK constructs and verifies capability chains",
-        "TypeScript SDK constructs and verifies capability chains",
-        "Attenuation supports time bounds and usage limits",
-        "Matches capability test vectors",
-        "Typecheck passes",
-        "Tests pass"
-      ],
-      "priority": 21,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "JD-022",
-      "title": "Proof-of-work spam protection",
-      "description": "As a relay operator, I want optional PoW verification and a client helper so I can reduce spam.",
-      "acceptanceCriteria": [
-        "Relay can require configurable PoW difficulty",
-        "SDKs include helper to compute PoW nonce",
-        "Typecheck passes",
-        "Tests pass"
-      ],
-      "priority": 22,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "JD-023",
-      "title": "Lightning invoice attachments for capability offers",
-      "description": "As a protocol user, I want to attach Lightning invoices to capability offer events (kind 10002).",
-      "acceptanceCriteria": [
-        "Schema and protocol docs define invoice attachment for kind 10002",
-        "SDKs can serialize and parse invoice attachments",
-        "Typecheck passes",
-        "Tests pass"
-      ],
-      "priority": 23,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "JD-024",
-      "title": "Cross-language integration tests",
-      "description": "As a maintainer, I want integration tests that validate Python relay, Python SDK, and TypeScript SDK interoperability.",
-      "acceptanceCriteria": [
-        "integration-tests run Python relay and both SDKs",
-        "Interop tests cover publish/subscribe and filter behavior",
-        "Typecheck passes",
-        "Tests pass"
-      ],
-      "priority": 24,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "JD-025",
-      "title": "Benchmark suite for relay and SDKs",
-      "description": "As a maintainer, I want reproducible benchmarks for latency and throughput.",
-      "acceptanceCriteria": [
-        "Benchmark scripts measure relay P99 latency and throughput",
-        "Benchmark scripts measure Python and TypeScript publish throughput",
-        "Typecheck passes",
-        "Tests pass"
-      ],
-      "priority": 25,
-      "passes": false,
-      "notes": ""
-    },
-    {
-      "id": "JD-026",
-      "title": "Developer examples and docs",
-      "description": "As a developer, I want examples for LangChain and Vercel AI SDK plus relay deployment notes.",
-      "acceptanceCriteria": [
-        "Examples are added for LangChain and Vercel AI SDK integration",
-        "Docs include minimal relay deployment instructions",
+        "Add `aether/crdt/` with minimal classes for G-Counter, PN-Counter, LWW-Register, and OR-Set",
+        "Each class exposes add/update/remove APIs with docstrings describing intended behavior",
         "Typecheck passes"
       ],
-      "priority": 26,
+      "priority": 12,
       "passes": false,
       "notes": ""
     }
