@@ -67,8 +67,8 @@
         "Typecheck passes"
       ],
       "priority": 5,
-      "passes": false,
-      "notes": ""
+      "passes": true,
+      "notes": "Added implementations/relay/pyproject.toml with minimal setuptools config plus aether_relay package scaffold (__init__.py, server.py stub)."
     },
     {
       "id": "JD-006",
