@@ -1,0 +1,347 @@
+AETHER PROTOCOL SPECIFICATION
+Draft 01 - February 2026
+
+Authors: Valentin Nagacevschi
+Status: Draft
+Intended Status: Informational
+Expires: August 2026
+
+Abstract
+
+   This document specifies Aether (AT), a binary messaging protocol 
+   for autonomous agent communication. AT combines content-addressed 
+   messaging with zero-copy serialization, supporting both real-time 
+   signal transmission and conflict-free state synchronization. The 
+   protocol is transport-agnostic but optimized for QUIC and provides 
+   decentralized identity via Ed25519 public keys.
+
+Table of Contents
+
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . .  2
+   2.  Conventions and Terminology . . . . . . . . . . . . . . . .  3
+   3.  Protocol Overview . . . . . . . . . . . . . . . . . . . . .  3
+   4.  Event Structure . . . . . . . . . . . . . . . . . . . . . .  4
+     4.1.  Event ID Calculation  . . . . . . . . . . . . . . . . .  5
+     4.2.  Event Kinds . . . . . . . . . . . . . . . . . . . . . .  5
+     4.3.  Tags  . . . . . . . . . . . . . . . . . . . . . . . . .  6
+   5.  Wire Format . . . . . . . . . . . . . . . . . . . . . . . .  7
+   6.  Relay Behavior  . . . . . . . . . . . . . . . . . . . . . .  8
+     6.1.  Storage Policies  . . . . . . . . . . . . . . . . . . .  8
+     6.2.  Subscription Filters  . . . . . . . . . . . . . . . . .  9
+   7.  Client Behavior . . . . . . . . . . . . . . . . . . . . . .  9
+   8.  Capability Delegation . . . . . . . . . . . . . . . . . . . 10
+   9.  Proof-of-Work . . . . . . . . . . . . . . . . . . . . . . . 11
+   10. Security Considerations . . . . . . . . . . . . . . . . . . 11
+   11. References  . . . . . . . . . . . . . . . . . . . . . . . . 12
+
+1. Introduction
+
+   Aether (AT) is designed for machine-to-machine communication 
+   where participants are autonomous agents rather than human users. 
+   Unlike NOSTR [NIP-01], which uses JSON for human readability, AT 
+   uses binary serialization (FlatBuffers) for zero-copy parsing and 
+   reduced bandwidth consumption.
+   
+   The protocol maintains NOSTR's decentralized philosophy: clients 
+   perform all validation and business logic, while relays provide 
+   minimal storage and forwarding services. This "dumb relay, smart 
+   client" architecture enables censorship-resistant communication 
+   without federated consensus.
+
+   Key features:
+   o  Content-addressed events (Blake3 hashes) enabling deduplication
+   o  Replaceable events for state synchronization (CRDT semantics)
+   o  Ephemeral events for real-time signals (no storage)
+   o  Capability-based delegation (macaroon-style attenuation)
+   o  Tag-based routing supporting multi-dimensional filtering
+
+2. Conventions and Terminology
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", 
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this 
+   document are to be interpreted as described in RFC 2119 [RFC2119].
+
+   Agent:       An autonomous software entity identified by an Ed25519 
+                public key.
+                
+   Event:       A signed message containing content and metadata.
+   
+   Relay:       A server that accepts, stores, and forwards Events.
+   
+   Event ID:    The Blake3 hash of an Event's canonical serialization, 
+                serving as a unique content identifier.
+                
+   Kind:        A 16-bit unsigned integer classifying Event semantics 
+                and storage policies.
+                
+   Tag:         A key-value pair attached to an Event for routing and 
+                referencing.
+
+3. Protocol Overview
+
+   AT operates over bidirectional byte streams (typically QUIC 
+   connections). The protocol consists of three layers:
+
+   Message Layer:    Length-prefixed FlatBuffers messages (Events).
+   Security Layer:   Ed25519 signatures over Event IDs.
+   Transport Layer:  QUIC, TCP, or WebSocket (QUIC recommended).
+
+   All participants generate Ed25519 keypairs for identity. No 
+   registration or central authority is required. Agents discover 
+   relays via bootstrap lists or DHT (implementation-specific).
+
+   +--------+           Event (signed)          +--------+
+   | Agent  | --------------------------------> | Relay  |
+   |(Client)| <-------------------------------- |        |
+   +--------+        Subscription Filter        +--------+
+                            |
+                            v
+                       Other Agents
+
+4. Event Structure
+
+   An Event is a structured binary object with the following fields:
+
+   event_id:     32 bytes, Blake3 hash (see Section 4.1)
+   pubkey:       32 bytes, Ed25519 public key (compressed)
+   kind:         uint16, classification (see Section 4.2)
+   created_at:   uint64, Unix timestamp in nanoseconds
+   tags:         Array of Tag structures
+   content:      Variable-length opaque payload
+   sig:          64 bytes, Ed25519 signature of event_id
+
+4.1. Event ID Calculation
+
+   The event_id is the Blake3 hash [BLAKE3] of the concatenation 
+   of the following fields in network byte order:
+   
+   1. pubkey (32 bytes)
+   2. created_at (8 bytes, big-endian)
+   3. kind (2 bytes, big-endian)
+   4. tags (serialized as: count [2 bytes] + tag data)
+   5. content (raw bytes)
+
+   The event_id serves as:
+   - A unique identifier for deduplication
+   - The signed payload (sig = Ed25519.sign(private_key, event_id))
+   - A content-address for caching
+
+4.2. Event Kinds
+
+   Kind values determine storage semantics:
+
+   0-999 (IMMUTABLE): Permanent storage. Relay MUST retain indefinitely.
+       Kind 0: Agent metadata (JSON or FlatBuffers)
+
+   10000-19999 (REPLACEABLE): Latest only. Relay MUST retain only the 
+       most recent Event per (pubkey, kind) combination.
+       Example: Kind 10001 = Current State Vector
+
+   20000-29999 (EPHEMERAL): No storage. Relay MUST broadcast to current 
+       subscribers but MUST NOT persist to disk.
+       Example: Kind 29999 = Emergency Stop Signal
+
+   30000-39999 (PARAMETERIZED_REPLACEABLE): Latest per parameter.
+       Relay MUST retain latest per (pubkey, kind, d-tag) combination.
+       Example: Kind 30001 = Task Template (d-tag = task_type)
+
+   Relays MAY drop Events with kinds outside these ranges or implement 
+   custom policies, but the above ranges MUST be supported for 
+   interoperability.
+
+4.3. Tags
+
+   Tags provide multi-dimensional routing metadata. Each Tag consists 
+   of:
+   
+   key:    1-8 ASCII characters (alphanumeric + underscore)
+   values: Array of UTF-8 strings (max 16 values, 1024 bytes each)
+
+   Standardized tag keys:
+   
+   "p":     Reference to another agent (pubkey hex)
+   "e":     Reference to another Event (event_id hex)
+   "c":     Capability required/ offered
+   "d":     Identifier for parameterized replaceable events
+   "g":     Geohash (spatial indexing)
+   "t":     Topic/ taxonomy classification
+   "expiration": Unix timestamp when event becomes invalid
+
+   Example routing filter: ["c", "vision", "analysis", "high_res"]
+   matches events tagged with capability "vision", sub-type "analysis", 
+   quality "high_res".
+
+5. Wire Format
+
+   Events are transmitted using FlatBuffers [FLATBUFFERS] with the 
+   following schema:
+
+   namespace Aether;
+
+   table Event {
+     event_id: [ubyte] (size: 32);
+     pubkey: [ubyte] (size: 32);
+     kind: uint16;
+     created_at: uint64;
+     tags: [Tag];
+     content: [ubyte];
+     sig: [ubyte] (size: 64);
+   }
+
+   table Tag {
+     key: string;
+     values: [string];
+   }
+
+   On the wire, Events are length-prefixed:
+   
+   [4 bytes: message length (big-endian)] [FlatBuffer Event]
+
+   Implementations SHOULD support zstd compression for content payloads 
+   > 1KB, indicated by Content-Encoding in metadata (implementation 
+   specific).
+
+6. Relay Behavior
+
+6.1. Storage Policies
+
+   Upon receiving an Event, a Relay MUST:
+   
+   1. Verify the signature (sig) against event_id using pubkey.
+      If invalid, discard silently.
+   
+   2. Check if Event with identical event_id exists. If yes, discard 
+      (idempotency).
+   
+   3. Apply kind-specific storage:
+      - IMMUTABLE: Store indexed by created_at.
+      - REPLACEABLE: Delete previous (pubkey, kind) Event, store new.
+      - EPHEMERAL: Forward to subscribers, do not store.
+      - PARAMETERIZED: Delete previous (pubkey, kind, d-tag), store new.
+
+   4. Forward to all subscribers matching the Event's tags.
+
+   Relays SHOULD implement Bloom filters to quickly reject duplicate 
+   event_ids without database lookups.
+
+6.2. Subscription Filters
+
+   Clients subscribe to Events by sending Filter objects:
+
+   table Filter {
+     ids: [string];         // Match event_id (exact)
+     authors: [string];     // Match pubkey
+     kinds: [uint16];
+     since: uint64;         // created_at >= since
+     until: uint64;         // created_at <= until
+     tag_filters: [TagFilter];
+     limit: uint32;
+   }
+
+   table TagFilter {
+     key: string;
+     values: [string];      // OR logic within values
+   }
+
+   A Relay MUST deliver Events matching ALL provided filter fields 
+   (AND logic between fields, OR logic within array values).
+
+7. Client Behavior
+
+   Agents (clients) MUST:
+   
+   o  Generate cryptographically secure Ed25519 keypairs
+   o  Maintain monotonic clocks (NTP or better) for created_at
+   o  Verify all relay-provided Events before processing
+   o  Handle replaceable Events by overwriting local state
+   o  Implement exponential backoff for relay reconnection
+
+   Agents SHOULD:
+   
+   o  Connect to 3-5 relays for redundancy
+   o  Publish critical Events to multiple relays concurrently
+   o  Cache event_ids for 60 seconds to suppress duplicates
+   o  Use ephemeral Events (kind 20000+) for heartbeats < 1s interval
+
+8. Capability Delegation
+
+   Agents MAY delegate capabilities using chained delegation tokens 
+   stored in content fields. The delegation chain is verified 
+   client-side (relays are unaware).
+
+   Delegation structure:
+   - delegator_pubkey: 32 bytes
+   - delegatee_pubkey: 32 bytes
+   - capability: string (e.g., "storage:write:bucket_a")
+   - expiry: uint64
+   - restrictions: array of caveats
+   - signature: Ed25519(delegator, hash_of_above)
+
+   A delegator MAY revoke by publishing a Kind 10002 Event containing 
+   the delegation hash in a "revocation" tag.
+
+9. Proof-of-Work
+
+   For open networks vulnerable to spam, Relays MAY require 
+   Proof-of-Work (PoW) on Events.
+
+   PoW difficulty is defined as the number of leading zero bits in 
+   the event_id. Clients grind the created_at field or a nonce in 
+   content to find valid hashes.
+
+   Relays advertise minimum difficulty via INFO messages 
+   (implementation-specific). Difficulty SHOULD scale dynamically 
+   with network load.
+
+   PoW is OPTIONAL and typically only required for Kind 0 (metadata) 
+   or initial bootstrap to prevent Sybil attacks.
+
+10. Security Considerations
+
+   10.1. Signature Verification
+   
+   Implementations MUST verify Ed25519 signatures in constant-time 
+   to prevent timing attacks. Use established libraries (libsodium, 
+   ed25519-dalek, etc.).
+
+   10.2. Replay Protection
+   
+   The created_at field provides weak ordering. Relays SHOULD reject 
+   Events with timestamps > 60 seconds in the future. Clients SHOULD 
+   ignore Events with timestamps older than their subscription start 
+   unless explicitly requested (historical sync).
+
+   10.3. Content Security
+   
+   Relays MUST NOT parse or execute content payloads. Agents MUST 
+   sandbox content processing (e.g., FlatBuffers schema validation) 
+   to prevent malicious payloads from compromising the agent.
+
+   10.4. Privacy
+   
+   Event content is visible to all relays and subscribers. Agents 
+   SHOULD encrypt sensitive content using the Noise Protocol or 
+   similar before embedding in Events.
+
+   10.5. Denial of Service
+   
+   Replaceable Events prevent storage exhaustion from state updates. 
+   Relays SHOULD rate-limit by pubkey and implement PoW for 
+   unauthenticated networks.
+
+11. References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate 
+              Requirement Levels", BCP 14, RFC 2119, March 1997.
+
+   [NIP-01]   NOSTR Protocol, "NIP-01: Basic Protocol Flow", 
+              https://github.com/nostr-protocol/nips/blob/master/01.md
+
+   [BLAKE3]   O'Connor, J., et al., "BLAKE3: One function, fast 
+              everywhere", 2020.
+
+   [FLATBUFFERS]  FlatBuffers: Efficient cross platform serialization 
+                  library, Google.
+
+   [NOISE]    Perrin, T., "The Noise Protocol Framework", 
+              https://noiseprotocol.org/noise.html
