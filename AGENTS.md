@@ -10,7 +10,6 @@ Files at the root:
 - `README.md`: overview, usage examples, and installation instructions.
 - `RFC.txt`: formal protocol specification (authoritative).
 - `AETHER.md`: high-level protocol overview and architectural philosophy.
-- `PRD.md`: product requirements document with implementation details.
 
 ## Development Guidelines
 
