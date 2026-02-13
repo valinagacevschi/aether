@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aether-protocol"
+version = "0.1.0"
+description = "Aether Python SDK"
+readme = "README.md"
+license = { text = "MIT" }
+urls = { Homepage = "https://github.com/aether-protocol/aether" }
+requires-python = ">=3.10"
+dependencies = [
+  "PyNaCl",
+  "blake3",
+  "bech32",
+  "cryptography",
+  "flatbuffers",
+  "websockets",
+]
+
+[project.optional-dependencies]
+dev = [
+  "black",
+  "mypy",
+  "pytest",
+  "ruff",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["aether*"]

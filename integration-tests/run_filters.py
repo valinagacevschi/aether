@@ -30,7 +30,7 @@ def main() -> None:
     ])
     try:
         time.sleep(1.0)
-        subprocess.run(["pnpm", "-C", str(ROOT / "implementations" / "typescript-sdk"), "build"], check=True)
+        subprocess.run(["pnpm", "-C", str(ROOT / "sdk" / "typescript"), "build"], check=True)
 
         ts_sub = run_background([
             "node",

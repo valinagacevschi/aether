@@ -11,3 +11,8 @@ __init__.py
 *.pywz
 *.pyzw
 *.pyzwz
+*-key.pem
+*.pem
+*.db
+*.sqlite* 
+realy.db

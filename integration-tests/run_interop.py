@@ -34,7 +34,7 @@ def main() -> None:
     ])
     try:
         time.sleep(1.0)
-        run(["pnpm", "-C", str(ROOT / "implementations" / "typescript-sdk"), "build"])
+        run(["pnpm", "-C", str(ROOT / "sdk" / "typescript"), "build"])
         run([sys.executable, str(ROOT / "integration-tests" / "python" / "publish.py"), "--url", args.url])
         run(["node", str(ROOT / "integration-tests" / "ts" / "subscribe.js"), args.url])
 

@@ -282,8 +282,9 @@ aether-protocol/
 │   ├── test-vectors/        # YAML test cases (conformance)
 │   └── protocol.md          # Protocol specification
 │
-├── implementations/
-│   ├── relay/               # Python (asyncio-native)
+├── relay/
+│   ├── README.md
+│   ├── python/              # Python (asyncio-native)
 │   │   ├── pyproject.toml
 │   │   └── aether_relay/
 │   │       ├── __init__.py
@@ -291,14 +292,15 @@ aether-protocol/
 │   │       ├── storage/     # SQLite or RocksDB bindings
 │   │       └── crypto.py    # PyNaCl/Blake3 (pure Python)
 │   │
-│   ├── python-sdk/          # Pure Python (shares code with relay)
+├── sdk/
+│   ├── python/              # Pure Python (shares code with relay)
 │   │   ├── aether/
 │   │   │   ├── __init__.py
 │   │   │   ├── client.py    # asyncio native
 │   │   │   └── crypto.py    # PyNaCl/Blake3
-│   │   └── setup.py         # pip installable
+│   │   └── pyproject.toml   # pip installable
 │   │
-│   └── typescript-sdk/      # TypeScript + WASM
+│   └── typescript/          # TypeScript + WASM
 │       ├── src/
 │       │   ├── client.ts    # Universal transport
 │       │   ├── wasm/        # WASM crypto bundle
@@ -505,7 +507,7 @@ const agent = new AetherAgent({
 1. Review PRD with stakeholders (Week 1)
 2. Finalize FlatBuffers schema (`spec/schema.fbs`) (Week 1)
 3. Create initial test vectors (`spec/test-vectors/`) (Week 1)
-4. Scaffold monorepo structure (`spec/`, `implementations/relay/`, `implementations/python-sdk/`, `implementations/typescript-sdk/`) (Week 1-2)
+4. Scaffold monorepo structure (`spec/`, `relay/python/`, `sdk/python/`, `sdk/typescript/`) (Week 1-2)
 5. Begin Python relay implementation (Week 2)
 6. Begin Python SDK implementation (Week 2-3, shares code with relay)
 

@@ -1,0 +1,20 @@
+namespace Aether;
+
+enum MessageType:ubyte {
+  HELLO = 0,
+  WELCOME = 1,
+  PUBLISH = 2,
+  SUBSCRIBE = 3,
+  UNSUBSCRIBE = 4,
+  EVENT = 5,
+  ACK = 6,
+  ERROR = 7,
+  NOISE = 8
+}
+
+table Message {
+  type: MessageType;
+  payload: [ubyte];
+}
+
+root_type Message;

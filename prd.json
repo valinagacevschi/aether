@@ -62,20 +62,20 @@
       "title": "Scaffold Python relay package",
       "description": "As a developer, I want a Python relay package scaffold to start implementing relay features.",
       "acceptanceCriteria": [
-        "Create `implementations/relay/pyproject.toml` and package directory `implementations/relay/aether_relay/`",
+        "Create `relay/python/pyproject.toml` and package directory `relay/python/aether_relay/`",
         "Include an importable `aether_relay/__init__.py` and a minimal `server.py` entrypoint",
         "Typecheck passes"
       ],
       "priority": 5,
       "passes": true,
-      "notes": "Added implementations/relay/pyproject.toml with minimal setuptools config plus aether_relay package scaffold (__init__.py, server.py stub)."
+      "notes": "Added relay/python/pyproject.toml with minimal setuptools config plus aether_relay package scaffold (__init__.py, server.py stub)."
     },
     {
       "id": "JD-006",
       "title": "Implement Python crypto utilities",
       "description": "As a developer, I want shared crypto utilities so event signing and verification are consistent.",
       "acceptanceCriteria": [
-        "Add keypair generation, event_id computation, sign, and verify functions in `implementations/relay/aether_relay/crypto.py`",
+        "Add keypair generation, event_id computation, sign, and verify functions in `relay/python/aether_relay/crypto.py`",
         "Functions validate against vectors in `spec/test-vectors/valid-events.yaml`",
         "Add unit tests covering keygen, sign/verify, and event_id computation",
         "Tests pass",
@@ -90,7 +90,7 @@
       "title": "Add event validation logic",
       "description": "As a relay, I want to validate events so invalid or replayed messages are rejected.",
       "acceptanceCriteria": [
-        "Add validation function enforcing signature, event_id match, and timestamp window (\u00b160s) in `implementations/relay/aether_relay/validation.py`",
+        "Add validation function enforcing signature, event_id match, and timestamp window (\u00b160s) in `relay/python/aether_relay/validation.py`",
         "Validation uses kind range policy (0-39999) and rejects out-of-range kinds",
         "Add unit tests for each validation failure case",
         "Tests pass",
@@ -105,7 +105,7 @@
       "title": "Implement in-memory relay storage semantics",
       "description": "As a relay, I need storage semantics for immutable, replaceable, ephemeral, and parameterized events.",
       "acceptanceCriteria": [
-        "Add in-memory store with insert/query logic for the four event kinds in `implementations/relay/aether_relay/storage/`",
+        "Add in-memory store with insert/query logic for the four event kinds in `relay/python/aether_relay/storage/`",
         "Replaceable events overwrite prior events by `(pubkey, kind)`; parameterized events by `(pubkey, kind, d-tag)`",
         "Ephemeral events are not stored after broadcast",
         "Add unit tests covering each storage semantic",
@@ -121,33 +121,33 @@
       "title": "Scaffold Python SDK package",
       "description": "As a developer, I want a Python SDK scaffold to build client features.",
       "acceptanceCriteria": [
-        "Create `implementations/python-sdk/pyproject.toml` and package directory `implementations/python-sdk/aether/`",
+        "Create `sdk/python/pyproject.toml` and package directory `sdk/python/aether/`",
         "Include `aether/__init__.py` and a minimal `client.py` stub with async connect/publish signatures",
         "Typecheck passes"
       ],
       "priority": 9,
       "passes": true,
-      "notes": "Added implementations/python-sdk scaffold with pyproject.toml, aether package, __init__.py, and async Client stub in client.py."
+      "notes": "Added sdk/python scaffold with pyproject.toml, aether package, __init__.py, and async Client stub in client.py."
     },
     {
       "id": "JD-010",
       "title": "Scaffold TypeScript SDK package",
       "description": "As a developer, I want a TypeScript SDK scaffold to build client features.",
       "acceptanceCriteria": [
-        "Create `implementations/typescript-sdk/package.json` and `implementations/typescript-sdk/tsconfig.json`",
+        "Create `sdk/typescript/package.json` and `sdk/typescript/tsconfig.json`",
         "Add `src/client.ts` with exported client class stub and placeholder connect/publish methods",
         "Typecheck passes"
       ],
       "priority": 10,
       "passes": true,
-      "notes": "Added implementations/typescript-sdk scaffold with package.json, tsconfig.json, and src/client.ts stub (connect/publish)."
+      "notes": "Added sdk/typescript scaffold with package.json, tsconfig.json, and src/client.ts stub (connect/publish)."
     },
     {
       "id": "JD-011",
       "title": "Add Python conformance test runner",
       "description": "As a maintainer, I want a conformance runner so Python implementations can validate against shared vectors.",
       "acceptanceCriteria": [
-        "Add `implementations/relay/tests/test_vectors.py` to load YAML vectors and validate crypto + event_id",
+        "Add `relay/python/tests/test_vectors.py` to load YAML vectors and validate crypto + event_id",
         "Runner reads both valid and invalid vector files and asserts correct pass/fail behavior",
         "Tests pass",
         "Typecheck passes"

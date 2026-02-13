@@ -1,0 +1,21 @@
+Metadata-Version: 2.4
+Name: aether-relay
+Version: 0.1.0
+Summary: Aether relay implementation
+Requires-Python: >=3.10
+Requires-Dist: PyNaCl
+Requires-Dist: blake3
+Requires-Dist: cryptography
+Requires-Dist: flatbuffers
+Requires-Dist: aioquic
+Requires-Dist: libp2p
+Requires-Dist: websockets
+Provides-Extra: rocksdb
+Requires-Dist: python-rocksdb; extra == "rocksdb"
+Provides-Extra: dev
+Requires-Dist: black; extra == "dev"
+Requires-Dist: mypy; extra == "dev"
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: PyYAML; extra == "dev"
+Requires-Dist: ruff; extra == "dev"
+Requires-Dist: types-PyYAML; extra == "dev"

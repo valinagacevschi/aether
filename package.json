@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "typecheck": "pnpm -C implementations/typescript-sdk typecheck && ./scripts/python-dev.sh -m mypy implementations/relay/aether_relay implementations/python-sdk/aether",
-    "test": "pnpm -C implementations/typescript-sdk test && ./scripts/python-dev.sh -m pytest implementations/relay/tests implementations/python-sdk/tests"
+    "typecheck": "pnpm -C sdk/typescript typecheck && ./scripts/python-dev.sh -m mypy relay/python/aether_relay sdk/python/aether",
+    "test": "pnpm -C sdk/typescript test && ./scripts/python-dev.sh -m pytest relay/python/tests sdk/python/tests",
+    "verify:python-package": "python -m build sdk/python",
+    "verify:ts-package": "pnpm -C sdk/typescript build && pnpm -C sdk/typescript pack"
   }
 }

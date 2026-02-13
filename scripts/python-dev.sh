@@ -16,6 +16,6 @@ fi
 # shellcheck disable=SC1091
 source "$VENV_DIR/bin/activate"
 
-python -m pip install -e implementations/relay[dev] -e implementations/python-sdk[dev]
+python -m pip install -e relay/python[dev] -e sdk/python[dev]
 
 exec python "$@"

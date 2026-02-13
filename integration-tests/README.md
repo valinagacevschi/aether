@@ -8,10 +8,12 @@
 python integration-tests/run_relay.py --host 127.0.0.1 --port 9000
 ```
 
+Note: `run_relay.py` adds `relay/python` to `PYTHONPATH`.
+
 2) Build TypeScript SDK:
 
 ```bash
-pnpm -C implementations/typescript-sdk build
+pnpm -C sdk/typescript build
 ```
 
 3) Run interop harness:
@@ -38,9 +40,19 @@ python integration-tests/run_filters.py --url ws://127.0.0.1:9000
 python integration-tests/bench/bench_relay.py --url ws://127.0.0.1:9000 --count 1000
 python integration-tests/bench/bench_python_sdk.py --url ws://127.0.0.1:9000 --count 1000
 node integration-tests/bench/bench_ts_sdk.js ws://127.0.0.1:9000 1000
+python integration-tests/bench/bench_nostr_gateway.py --url ws://127.0.0.1:7447 --count 1000
+python integration-tests/bench/bench_http_gateway.py --host 127.0.0.1 --port 8081 --count 1000
+python integration-tests/bench/failure_modes.py
 ```
 
 ## Notes
 
 - These scripts use the WebSocket relay transport for portability.
 - QUIC transport tests can be added once certificates are available.
+
+## Gateway Examples
+
+```bash
+PYTHONPATH="$PWD/sdk/python" python integration-tests/examples/nostr_client_min.py
+PYTHONPATH="$PWD/sdk/python" python integration-tests/examples/http_publish_sse.py
+```

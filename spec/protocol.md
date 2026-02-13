@@ -54,9 +54,18 @@ Filter evaluation:
 
 ## Transport
 
-Events are transmitted as length-prefixed FlatBuffers messages.
+Messages are transmitted as length-prefixed FlatBuffers frames.
 - 4 bytes: message length (big-endian)
-- N bytes: FlatBuffers `Event`
+- N bytes: FlatBuffers `Message` (see `spec/message.fbs`)
+
+FlatBuffers `Message` payloads carry JSON bytes for now to preserve
+backward compatibility with existing JSON handlers. Message types:
+`HELLO`, `WELCOME`, `PUBLISH`, `SUBSCRIBE`, `UNSUBSCRIBE`, `EVENT`,
+`ACK`, `ERROR`, `NOISE`.
+
+JSON fallback: if a peer does not support FlatBuffers, the same
+message shape is exchanged as JSON (text for WebSocket; length-prefixed
+bytes for QUIC).
 
 Transport is stream-based and transport-agnostic. QUIC is recommended; TCP/WebSocket are acceptable.
 
@@ -65,6 +74,37 @@ Handshake and versioning:
 2. Client sends a `HELLO` frame containing protocol version and supported features.
 3. Relay responds with `WELCOME` + negotiated version.
 4. If supported, peers upgrade to Noise (XX) after handshake for forward secrecy.
+
+HELLO JSON shape (payload for FlatBuffers `HELLO`):
+```json
+{
+  "type": "hello",
+  "version": 1,
+  "formats": ["flatbuffers", "json"],
+  "noise": {
+    "required": true,
+    "pubkey": "<x25519-pubkey-hex>"
+  }
+}
+```
+
+WELCOME JSON shape (payload for FlatBuffers `WELCOME`):
+```json
+{
+  "type": "welcome",
+  "version": 1,
+  "format": "flatbuffers",
+  "noise": {
+    "required": true,
+    "pubkey": "<x25519-pubkey-hex>"
+  }
+}
+```
+
+NOISE message payload:
+- 8 bytes: nonce counter (uint64 big-endian)
+- N bytes: AEAD ciphertext over an inner application frame encoded
+  using the negotiated format.
 
 ## Validation
 
@@ -75,6 +115,34 @@ A relay/client validating an Event MUST:
 4. Enforce timestamp window (recommended: reject > 60s in the future).
 
 Relays SHOULD treat duplicate `event_id` as idempotent and ignore after first acceptance.
+
+## Compatibility Gateways
+
+The relay MAY expose compatibility adapters while keeping native Aether transport unchanged.
+
+Canonical gateway event contract:
+- `event_id`, `pubkey`, `sig`: hex strings
+- `kind`, `created_at`: integers
+- `tags`: list of string lists (`[key, ...values]`)
+- `content`: UTF-8 string
+
+Error codes used by adapters:
+- `invalid_message`
+- `invalid_event`
+- `validation_failed`
+- `subscription_not_found`
+
+NOSTR gateway (NIP-01 core):
+- Inbound: `EVENT`, `REQ`, `CLOSE`
+- Outbound: `OK`, `EVENT`, `EOSE`, `NOTICE`
+
+HTTP gateway:
+- `POST /v1/events`
+- `POST /v1/subscriptions`
+- `DELETE /v1/subscriptions/{id}`
+- `GET /v1/stream?subscription_id=...` (SSE)
+- `GET /healthz`
+- `GET ws://.../v1/ws` (JSON WebSocket)
 
 ## Capability Tokens (Delegation)
 

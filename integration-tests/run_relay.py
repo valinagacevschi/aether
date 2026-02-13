@@ -1,6 +1,11 @@
 import argparse
 import asyncio
 import signal
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "relay" / "python"))
 
 from aether_relay.core import RelayCore, RelayConfig
 from aether_relay.storage import InMemoryEventStore

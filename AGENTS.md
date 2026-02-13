@@ -26,3 +26,7 @@ Files at the root:
 - **Spec-first approach**: Update `spec/` before implementing.
 - **Small, reviewable changes**: Keep PRs focused and easy to review.
 - **Tooling changes**: If you introduce new tooling or dependencies, explain why and update relevant documentation.
+
+## Lessons Learned
+
+- Normalize cross-protocol aliases at adapter boundaries (`id` vs `event_id`) before validation to prevent subtle interoperability failures.

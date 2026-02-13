@@ -1,0 +1,46 @@
+name: release-verify
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Python build + smoke
+        run: |
+          python -m pip install --upgrade pip build
+          python -m build sdk/python
+          python -m venv .venv-smoke
+          . .venv-smoke/bin/activate
+          pip install sdk/python
+          python -c "import aether; print(aether.__version__)"
+
+      - name: TypeScript build + smoke
+        run: |
+          cd sdk/typescript
+          npm install
+          npm run build
+          npm pack
+          PKG=$(ls *.tgz | head -n 1)
+          npm install "$PKG"
+          node -e "const sdk=require('./dist/index.js'); console.log(Object.keys(sdk).length >= 1)"
+
+      - name: Relay tests
+        run: |
+          python -m pip install -e relay/python[dev]
+          pytest -q relay/python/tests

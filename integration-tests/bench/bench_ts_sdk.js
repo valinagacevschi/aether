@@ -1,5 +1,5 @@
-const { AetherClient } = require("../../implementations/typescript-sdk/dist/client");
-const { computeEventId, generateKeypair, signEventId } = require("../../implementations/typescript-sdk/dist/crypto");
+const { AetherClient } = require("../../sdk/typescript/dist/client");
+const { computeEventId, generateKeypair, signEventId } = require("../../sdk/typescript/dist/crypto");
 
 async function main() {
   const url = process.argv[2] || "ws://127.0.0.1:9000";

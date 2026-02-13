@@ -1,6 +1,11 @@
 import argparse
 import asyncio
 import time
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(ROOT / "sdk" / "python"))
 
 from aether import Client
 from aether.crypto import compute_event_id, generate_keypair, sign

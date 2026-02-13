@@ -28,6 +28,7 @@ Table of Contents
    6.  Relay Behavior  . . . . . . . . . . . . . . . . . . . . . .  8
      6.1.  Storage Policies  . . . . . . . . . . . . . . . . . . .  8
      6.2.  Subscription Filters  . . . . . . . . . . . . . . . . .  9
+     6.3.  Compatibility Gateways . . . . . . . . . . . . . . . .  9
    7.  Client Behavior . . . . . . . . . . . . . . . . . . . . . .  9
    8.  Capability Delegation . . . . . . . . . . . . . . . . . . . 10
    9.  Proof-of-Work . . . . . . . . . . . . . . . . . . . . . . . 11
@@ -82,7 +83,7 @@ Table of Contents
    AT operates over bidirectional byte streams (typically QUIC 
    connections). The protocol consists of three layers:
 
-   Message Layer:    Length-prefixed FlatBuffers messages (Events).
+   Message Layer:    Length-prefixed FlatBuffers Message envelopes.
    Security Layer:   Ed25519 signatures over Event IDs.
    Transport Layer:  QUIC, TCP, or WebSocket (QUIC recommended).
 
@@ -173,33 +174,51 @@ Table of Contents
 
 5. Wire Format
 
-   Events are transmitted using FlatBuffers [FLATBUFFERS] with the 
-   following schema:
+   Aether defines two FlatBuffers schemas:
+   - Event schema (`spec/schema.fbs`) for canonical Event structures.
+   - Message envelope schema (`spec/message.fbs`) for transport frames.
+
+   Transport frames use the Message envelope:
 
    namespace Aether;
 
-   table Event {
-     event_id: [ubyte] (size: 32);
-     pubkey: [ubyte] (size: 32);
-     kind: uint16;
-     created_at: uint64;
-     tags: [Tag];
-     content: [ubyte];
-     sig: [ubyte] (size: 64);
+   enum MessageType:ubyte {
+     HELLO = 0,
+     WELCOME = 1,
+     PUBLISH = 2,
+     SUBSCRIBE = 3,
+     UNSUBSCRIBE = 4,
+     EVENT = 5,
+     ACK = 6,
+     ERROR = 7,
+     NOISE = 8
    }
 
-   table Tag {
-     key: string;
-     values: [string];
+   table Message {
+     type: MessageType;
+     payload: [ubyte];
    }
 
-   On the wire, Events are length-prefixed:
-   
-   [4 bytes: message length (big-endian)] [FlatBuffer Event]
+   root_type Message;
 
-   Implementations SHOULD support zstd compression for content payloads 
-   > 1KB, indicated by Content-Encoding in metadata (implementation 
-   specific).
+   The payload field contains UTF-8 JSON bytes for the logical message
+   body (publish/subscribe/event/ack/error, etc.).
+
+   On QUIC streams, frames are length-prefixed:
+   [4 bytes: message length (big-endian)] [FlatBuffer Message]
+
+   On WebSocket transport:
+   - Binary frames carry FlatBuffer Message bytes.
+   - Text frames carry JSON fallback messages.
+
+   Handshake and negotiation:
+   1. Client sends HELLO with supported formats and optional Noise key.
+   2. Relay responds with WELCOME selecting format (`flatbuffers` or `json`).
+   3. If Noise is required/negotiated, subsequent frames are wrapped in
+      NOISE messages until disconnect.
+
+   Implementations MUST support JSON fallback when FlatBuffers is not
+   mutually available.
 
 6. Relay Behavior
 
@@ -207,8 +226,8 @@ Table of Contents
 
    Upon receiving an Event, a Relay MUST:
    
-   1. Verify the signature (sig) against event_id using pubkey.
-      If invalid, discard silently.
+   1. Validate event_id and signature against pubkey.
+      If invalid, reject the publish request.
    
    2. Check if Event with identical event_id exists. If yes, discard 
       (idempotency).
@@ -221,30 +240,47 @@ Table of Contents
 
    4. Forward to all subscribers matching the Event's tags.
 
-   Relays SHOULD implement Bloom filters to quickly reject duplicate 
-   event_ids without database lookups.
+   Relays SHOULD enforce additional validation on publish:
+   - kind range/policy checks
+   - created_at window checks (RECOMMENDED: reject > 60s future skew)
+   - max event size checks
+   - rate limiting
+   - optional PoW threshold
+
+   Storage backend policy is implementation-specific. Current default
+   deployment uses SQLite, with optional memory and RocksDB backends.
+   Retention policy MAY prune old immutable events by configuration.
 
 6.2. Subscription Filters
 
-   Clients subscribe to Events by sending Filter objects:
+   Clients subscribe using filter objects with fields such as:
+   - ids: [event_id] exact match
+   - authors: [pubkey or prefix]
+   - kinds: [uint16]
+   - since / until: timestamp bounds
+   - tags: key/value matches (e.g., `#d`, `#t`)
+   - limit
 
-   table Filter {
-     ids: [string];         // Match event_id (exact)
-     authors: [string];     // Match pubkey
-     kinds: [uint16];
-     since: uint64;         // created_at >= since
-     until: uint64;         // created_at <= until
-     tag_filters: [TagFilter];
-     limit: uint32;
-   }
-
-   table TagFilter {
-     key: string;
-     values: [string];      // OR logic within values
-   }
-
-   A Relay MUST deliver Events matching ALL provided filter fields 
+   A Relay MUST deliver Events matching ALL provided filter fields
    (AND logic between fields, OR logic within array values).
+
+6.3. Compatibility Gateways
+
+   Relays MAY expose adapter gateways while preserving native Aether
+   protocol semantics.
+
+   NOSTR gateway scope (NIP-01 core):
+   - Inbound: ["EVENT", <event>], ["REQ", <sub_id>, <filter...>], ["CLOSE", <sub_id>]
+   - Outbound: ["OK", <event_id>, <bool>, <message>], ["EVENT", <sub_id>, <event>],
+               ["EOSE", <sub_id>], ["NOTICE", <message>]
+
+   HTTP gateway scope:
+   - POST /v1/events
+   - POST /v1/subscriptions
+   - DELETE /v1/subscriptions/{id}
+   - GET /v1/stream?subscription_id=... (SSE)
+   - GET /healthz
+   - WebSocket JSON endpoint: /v1/ws
 
 7. Client Behavior
 
@@ -270,15 +306,17 @@ Table of Contents
    client-side (relays are unaware).
 
    Delegation structure:
-   - delegator_pubkey: 32 bytes
-   - delegatee_pubkey: 32 bytes
+   - issuer: 32-byte Ed25519 pubkey
+   - subject: 32-byte Ed25519 pubkey
    - capability: string (e.g., "storage:write:bucket_a")
-   - expiry: uint64
-   - restrictions: array of caveats
-   - signature: Ed25519(delegator, hash_of_above)
+   - caveats: key/value constraints (e.g., expiry, not_before, max_uses)
+   - signature: Ed25519(issuer, token_id)
 
-   A delegator MAY revoke by publishing a Kind 10002 Event containing 
-   the delegation hash in a "revocation" tag.
+   token_id is computed as:
+   BLAKE3(canonical_json(issuer, subject, capability, caveats))
+
+   Capability offers MAY be carried in Kind 10002 events, including
+   optional Lightning invoice attachment metadata.
 
 9. Proof-of-Work
 

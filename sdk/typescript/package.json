@@ -1,0 +1,39 @@
+{
+  "name": "@aether-protocol/sdk",
+  "version": "0.1.0",
+  "description": "Aether Protocol TypeScript SDK",
+  "license": "MIT",
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "pnpm run build && node --test",
+    "prepare": "pnpm run build"
+  },
+  "dependencies": {
+    "@noble/ed25519": "^2.1.0",
+    "@noble/ciphers": "^0.5.1",
+    "@noble/curves": "^1.4.0",
+    "@noble/hashes": "^1.3.3",
+    "bech32": "^2.0.0",
+    "blake3": "^2.1.5",
+    "flatbuffers": "^24.3.25",
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "@types/ws": "^8.5.10",
+    "@types/node": "^20.11.25",
+    "typescript": "^5.3.3"
+  }
+}

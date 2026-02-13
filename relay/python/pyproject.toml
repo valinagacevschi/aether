@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aether-relay"
+version = "0.1.0"
+description = "Aether relay implementation"
+requires-python = ">=3.10"
+dependencies = [
+  "PyNaCl",
+  "blake3",
+  "cryptography",
+  "flatbuffers",
+  "aioquic",
+  "libp2p",
+  "websockets",
+]
+
+[project.optional-dependencies]
+rocksdb = [
+  "python-rocksdb",
+]
+dev = [
+  "black",
+  "mypy",
+  "pytest",
+  "PyYAML",
+  "ruff",
+  "types-PyYAML",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["aether_relay*"]

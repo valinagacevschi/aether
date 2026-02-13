@@ -32,29 +32,38 @@ See [PRD.md](./PRD.md) for the complete product requirements and [RFC.txt](./RFC
 
 ## Installation
 
+### Clone
+
+```bash
+git clone https://github.com/valinagacevschi/aether
+cd aether
+```
+
 ### Python SDK
 
 ```bash
 # Install from PyPI (when available)
-pip install aether-sdk
+pip install aether-protocol
 
 # Or install from source
-git clone https://github.com/valinagacevschi/aether
-cd aether
-cd implementations/python-sdk
+cd sdk/python
 pip install -e .
+```
+
+Local import (no install):
+
+```bash
+export PYTHONPATH="$PWD/sdk/python"
 ```
 
 ### TypeScript SDK
 
 ```bash
 # Install from npm (when available)
-npm install aether-sdk
+npm install @aether-protocol/sdk
 
 # Or install from source
-git clone https://github.com/valinagacevschi/aether
-cd aether
-cd implementations/typescript-sdk
+cd sdk/typescript
 npm install
 ```
 
@@ -62,13 +71,43 @@ npm install
 
 ```bash
 # Install relay server
-git clone https://github.com/valinagacevschi/aether
-cd aether
-cd implementations/relay
+cd relay/python
 pip install -e .
 
 # Run relay
-python -m aether_relay.server --ws-port 9000 --quic-port 4433
+python -m aether_relay.server --ws-port 9000 --quic-port 4433 --storage sqlite --storage-path data/relay.db
+```
+
+WebSocket is always enabled. QUIC is enabled when cert files exist.
+See `/Users/valentin.nagacevschi/dev/aether/relay/README.md` for a full QUIC setup example.
+
+## 5-Minute Start (Gateway Mode)
+
+```bash
+git clone https://github.com/valinagacevschi/aether
+cd aether
+
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e relay/python -e sdk/python
+
+cd sdk/typescript && npm install && npm run build && cd ../..
+
+cd relay/python
+PYTHONPATH=. python -m aether_relay.server \
+  --ws-host 127.0.0.1 --ws-port 9000 \
+  --gateway nostr,http \
+  --nostr-port 7447 \
+  --http-port 8081 \
+  --http-ws-port 8082
+```
+
+In another terminal:
+
+```bash
+source .venv/bin/activate
+PYTHONPATH="$PWD/sdk/python" python integration-tests/examples/nostr_client_min.py
+PYTHONPATH="$PWD/sdk/python" python integration-tests/examples/http_publish_sse.py
 ```
 
 ## Usage
@@ -109,8 +148,7 @@ asyncio.run(main())
 ### TypeScript SDK
 
 ```typescript
-import { AetherClient } from "@aether-protocol/typescript-sdk";
-import { computeEventId, generateKeypair, signEventId } from "@aether-protocol/typescript-sdk/dist/crypto";
+import { AetherClient, computeEventId, generateKeypair, signEventId } from "@aether-protocol/sdk";
 
 async function main() {
   const client = new AetherClient();
@@ -153,12 +191,14 @@ main();
 - **PyNaCl**: Ed25519 signatures
 - **blake3**: Content-addressed hashing
 - **flatbuffers**: Zero-copy serialization
+- **cryptography**: Noise-style upgrade (X25519 + AEAD)
 - **aioquic**: QUIC transport (asyncio-native)
 - **websockets**: WebSocket fallback
 - **py-libp2p**: Gossipsub for relay mesh
 
 ### TypeScript SDK
-- **@noble/ed25519** or **tweetnacl**: Ed25519 signatures
+- **@noble/ed25519**: Ed25519 signatures
+- **@noble/curves / @noble/ciphers / @noble/hashes**: Noise-style upgrade (X25519 + AEAD)
 - **blake3**: Content-addressed hashing (WASM)
 - **flatbuffers**: Zero-copy serialization
 - **ws** or **node-quic**: Transport (WebSocket/QUIC)
@@ -170,6 +210,7 @@ main();
 - Replay protection via timestamp validation
 - Content sandboxing (no execution of payloads)
 - Optional Proof-of-Work for spam prevention
+- Noise-style transport upgrade (X25519 + ChaCha20-Poly1305)
 
 ## Architecture
 
@@ -179,6 +220,24 @@ main();
 - **TypeScript SDK:** Native TypeScript with WASM crypto bundle
 
 This approach ensures `pip install` and `npm install` work immediately while maintaining debuggability and ecosystem alignment with agent frameworks (LangChain, AutoGen, CrewAI, Vercel AI SDK, LangChain.js).
+
+## Compatibility Matrix
+
+| Surface | Transport | Protocol | Status |
+|---|---|---|---|
+| Native Aether | WebSocket/QUIC | Aether messages (JSON/FlatBuffers) | Available |
+| NOSTR Gateway | WebSocket | NIP-01 core (`EVENT`,`REQ`,`CLOSE`) | Available |
+| HTTP Gateway | REST + SSE + WebSocket | JSON | Available |
+
+## Release Checklist
+
+1. `python -m build sdk/python`
+2. `cd sdk/typescript && npm install && npm run build && npm pack`
+3. `PYTHONPATH=. python -m pytest relay/python/tests`
+4. Validate quickstarts in `integration-tests/examples/`
+5. Tag and publish:
+   - Python: `py-vX.Y.Z`
+   - TypeScript: `ts-vX.Y.Z`
 
 ## Status
 
