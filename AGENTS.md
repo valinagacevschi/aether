@@ -29,3 +29,4 @@ Files at the root:
 ## Lessons Learned
 
 - Normalize cross-protocol aliases at adapter boundaries (`id` vs `event_id`) before validation to prevent subtle interoperability failures.
+- Keep release smoke checks resilient by validating installed distribution metadata (`importlib.metadata`) in addition to module-level version exports.
