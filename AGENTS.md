@@ -31,3 +31,4 @@ Files at the root:
 - Normalize cross-protocol aliases at adapter boundaries (`id` vs `event_id`) before validation to prevent subtle interoperability failures.
 - Keep release smoke checks resilient by validating installed distribution metadata (`importlib.metadata`) in addition to module-level version exports.
 - Avoid package-manager-specific lifecycle scripts in published npm packages; use `npm run ...` so `npm install` works in CI and consumer environments.
+- Pin SDK crypto calls to current library APIs (`blake3.hash`, `chacha20poly1305(key, nonce)`) to avoid type drift breaking CI builds.

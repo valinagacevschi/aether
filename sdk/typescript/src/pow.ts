@@ -1,4 +1,4 @@
-import { blake3 as blake3Js } from "blake3";
+import { hash as blake3Js } from "blake3";
 import { getWasm } from "./wasm";
 
 export function leadingZeroBits(data: Uint8Array): number {
@@ -39,7 +39,7 @@ export function computePowNonce(params: {
     const nonceBytes = u64be(nonce);
     const payload = concat([pubkey, u64be(createdAt), u16be(kind), tags, content, nonceBytes]);
     const wasm = getWasm();
-    const eventId = wasm ? wasm.blake3(payload) : blake3Js(payload);
+    const eventId = wasm ? wasm.blake3(payload) : toUint8Digest(blake3Js(payload));
     if (meetsDifficulty(eventId, difficulty)) {
       return { nonce, eventId };
     }
@@ -70,4 +70,11 @@ function concat(parts: Uint8Array[]): Uint8Array {
     offset += part.length;
   }
   return out;
+}
+
+function toUint8Digest(digest: Uint8Array | string): Uint8Array {
+  if (typeof digest === "string") {
+    return Uint8Array.from(Buffer.from(digest, "hex"));
+  }
+  return digest;
 }

@@ -1,4 +1,4 @@
-import { blake3 as blake3Js } from "blake3";
+import { hash as blake3Js } from "blake3";
 import { getPublicKey, sign as signJs, verify as verifyJs } from "@noble/ed25519";
 import { randomFillSync } from "node:crypto";
 
@@ -41,7 +41,7 @@ export function computeEventId(params: {
   if (wasm) {
     return wasm.blake3(payload);
   }
-  return blake3Js(payload);
+  return toUint8Digest(blake3Js(payload));
 }
 
 export async function signEventId(eventId: Uint8Array, privateKey: Uint8Array): Promise<Uint8Array> {
@@ -132,4 +132,11 @@ function getRandomValues(buffer: Uint8Array): Uint8Array {
     return globalThis.crypto.getRandomValues(buffer);
   }
   return randomFillSync(buffer);
+}
+
+function toUint8Digest(digest: Uint8Array | string): Uint8Array {
+  if (typeof digest === "string") {
+    return Uint8Array.from(Buffer.from(digest, "hex"));
+  }
+  return digest;
 }

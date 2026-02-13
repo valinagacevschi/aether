@@ -24,8 +24,8 @@ export class NoiseSession {
 
   encrypt(plaintext: Uint8Array): Uint8Array {
     const nonce = this.nonce(this.sendCounter);
-    const cipher = chacha20poly1305(this.key);
-    const ciphertext = cipher.encrypt(nonce, plaintext);
+    const cipher = chacha20poly1305(this.key, nonce);
+    const ciphertext = cipher.encrypt(plaintext);
     const counter = this.counterPrefix(this.sendCounter);
     this.sendCounter += 1;
     const out = new Uint8Array(counter.length + ciphertext.length);
@@ -40,8 +40,8 @@ export class NoiseSession {
     }
     const counter = bytesToNumber(payload.slice(0, 8));
     const nonce = this.nonce(counter);
-    const cipher = chacha20poly1305(this.key);
-    return cipher.decrypt(nonce, payload.slice(8));
+    const cipher = chacha20poly1305(this.key, nonce);
+    return cipher.decrypt(payload.slice(8));
   }
 
   private nonce(counter: number): Uint8Array {

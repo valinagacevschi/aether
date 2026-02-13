@@ -51,6 +51,13 @@ function normalizeKinds(raw: unknown): Set<number> | undefined {
   return new Set(raw.map((value) => parseIntField(value, "kind")));
 }
 
+function normalizeInt(raw: unknown): number | undefined {
+  if (raw === undefined || raw === null) {
+    return undefined;
+  }
+  return parseIntField(raw, "int");
+}
+
 function normalizePubkeyPrefixes(raw: unknown): Uint8Array[] | undefined {
   if (raw === undefined || raw === null) {
     return undefined;

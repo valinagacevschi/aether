@@ -14,3 +14,9 @@ test("filter matches event", () => {
   };
   assert.equal(matchEvent(event, filter), true);
 });
+
+test("filter normalizes since/until ints", () => {
+  const filter = normalizeFilter({ since: "10", until: 20 });
+  assert.equal(filter.since, 10);
+  assert.equal(filter.until, 20);
+});

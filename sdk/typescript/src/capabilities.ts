@@ -1,4 +1,4 @@
-import { blake3 as blake3Js } from "blake3";
+import { hash as blake3Js } from "blake3";
 import { getPublicKey, sign as signJs, verify as verifyJs } from "@noble/ed25519";
 
 import { getWasm } from "./wasm";
@@ -17,7 +17,7 @@ export function computeTokenId(token: CapabilityToken): Uint8Array {
   if (wasm) {
     return wasm.blake3(payload);
   }
-  return blake3Js(payload);
+  return toUint8Digest(blake3Js(payload));
 }
 
 export async function signToken(params: {
@@ -147,4 +147,11 @@ function sortObject(value: Record<string, unknown>): Record<string, unknown> {
     }
   }
   return out;
+}
+
+function toUint8Digest(digest: Uint8Array | string): Uint8Array {
+  if (typeof digest === "string") {
+    return Uint8Array.from(Buffer.from(digest, "hex"));
+  }
+  return digest;
 }
