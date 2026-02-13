@@ -33,3 +33,5 @@ Files at the root:
 - Avoid package-manager-specific lifecycle scripts in published npm packages; use `npm run ...` so `npm install` works in CI and consumer environments.
 - Pin SDK crypto calls to current library APIs (`blake3.hash`, `chacha20poly1305(key, nonce)`) to avoid type drift breaking CI builds.
 - Never ignore `__init__.py` globally; missing package init files silently break CI imports by turning packages into namespace modules.
+- In capability signing, always derive/store the issuer public key from the private key; using the private key as issuer breaks signature verification and masks caveat/capability checks.
+- For `websockets` compatibility, resolve request path from both `connection.path` and `connection.request.path` to avoid false policy-violation closes.

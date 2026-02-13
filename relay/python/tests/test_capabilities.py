@@ -26,6 +26,17 @@ def test_verify_chain_passes() -> None:
     verify_chain([token1, token2], now_ns=1)
 
 
+def test_sign_token_sets_issuer_public_key() -> None:
+    issuer_priv, issuer_pub = generate_keypair()
+    token = sign_token(
+        issuer_private_key=issuer_priv,
+        subject=issuer_pub,
+        capability="service:resource:read",
+        caveats={},
+    )
+    assert token.issuer == issuer_pub
+
+
 def test_verify_chain_rejects_expired() -> None:
     issuer_priv, issuer_pub = generate_keypair()
     subject_priv, subject_pub = generate_keypair()

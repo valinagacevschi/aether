@@ -180,7 +180,7 @@ class HttpGateway:
             await writer.wait_closed()
 
     async def _handle_ws(self, websocket: WebSocketServerProtocol) -> None:
-        path = getattr(websocket, "path", "/")
+        path = _ws_path(websocket)
         if path != "/v1/ws":
             await websocket.close(code=1008, reason="path not supported")
             return
@@ -278,3 +278,15 @@ def _json_default(value: object) -> str:
     if isinstance(value, bytes):
         return value.hex()
     raise TypeError("unsupported type")
+
+
+def _ws_path(websocket: WebSocketServerProtocol) -> str:
+    direct = getattr(websocket, "path", None)
+    if isinstance(direct, str):
+        return direct
+    request = getattr(websocket, "request", None)
+    if request is not None:
+        req_path = getattr(request, "path", None)
+        if isinstance(req_path, str):
+            return req_path
+    return "/"

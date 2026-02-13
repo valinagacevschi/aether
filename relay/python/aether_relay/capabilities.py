@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Iterable, Mapping
 
 from blake3 import blake3
+from nacl.signing import SigningKey
 
 from .crypto import sign as sign_event_id
 from .crypto import verify as verify_event_id
@@ -29,15 +30,17 @@ def compute_token_id(token: CapabilityToken) -> bytes:
 def sign_token(
     *, issuer_private_key: bytes, subject: bytes, capability: str, caveats: Mapping[str, object]
 ) -> CapabilityToken:
+    issuer_private_key_bytes = _parse_hex_or_bytes(issuer_private_key, "issuer_private_key", 32)
+    issuer_public_key = SigningKey(issuer_private_key_bytes).verify_key.encode()
     token = CapabilityToken(
-        issuer=_parse_hex_or_bytes(issuer_private_key, "issuer", 32),
+        issuer=issuer_public_key,
         subject=_parse_hex_or_bytes(subject, "subject", 32),
         capability=capability,
         caveats=caveats,
         sig=b"",
     )
     token_id = compute_token_id(token)
-    sig = sign_event_id(token_id, issuer_private_key)
+    sig = sign_event_id(token_id, issuer_private_key_bytes)
     return CapabilityToken(
         issuer=token.issuer,
         subject=token.subject,

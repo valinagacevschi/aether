@@ -69,9 +69,19 @@ async def _on_event(
         raise ValueError(f"{ERROR_INVALID_MESSAGE}: EVENT payload invalid")
     try:
         event = from_nostr_event(message[1])
-        await core.publish(connection_id, event, send)
+        buffered_events: list[Mapping[str, object]] = []
+
+        async def send_buffered(conn_id: str, payload: Mapping[str, object]) -> None:
+            if conn_id == connection_id and payload.get("type") == "event":
+                buffered_events.append(payload)
+                return
+            await send(conn_id, payload)
+
+        await core.publish(connection_id, event, send_buffered)
         event_id = str(event.get("event_id", ""))
         await websocket.send(json.dumps(["OK", event_id, True, "accepted"]))
+        for payload in buffered_events:
+            await send(connection_id, payload)
     except Exception as exc:
         event_id = ""
         if isinstance(message[1], Mapping):
