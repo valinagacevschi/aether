@@ -32,3 +32,4 @@ Files at the root:
 - Keep release smoke checks resilient by validating installed distribution metadata (`importlib.metadata`) in addition to module-level version exports.
 - Avoid package-manager-specific lifecycle scripts in published npm packages; use `npm run ...` so `npm install` works in CI and consumer environments.
 - Pin SDK crypto calls to current library APIs (`blake3.hash`, `chacha20poly1305(key, nonce)`) to avoid type drift breaking CI builds.
+- Never ignore `__init__.py` globally; missing package init files silently break CI imports by turning packages into namespace modules.
