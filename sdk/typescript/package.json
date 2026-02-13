@@ -18,8 +18,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "pnpm run build && node --test",
-    "prepare": "pnpm run build"
+    "test": "npm run build && node --test",
+    "prepare": "npm run build"
   },
   "dependencies": {
     "@noble/ed25519": "^2.1.0",
