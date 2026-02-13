@@ -243,8 +243,6 @@ This approach ensures `pip install` and `npm install` work immediately while mai
 
 ⚠️ **Early Development** - This implementation is under active development and may have breaking changes.
 
-See [PRD.md](./PRD.md) for the complete product requirements and roadmap.
-
 ## License
 
 See [LICENSE](./LICENSE) file.
