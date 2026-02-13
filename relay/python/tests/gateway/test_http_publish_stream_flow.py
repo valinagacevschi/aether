@@ -17,6 +17,25 @@ def _free_port() -> int:
         return int(sock.getsockname()[1])
 
 
+def _request_json(
+    *,
+    host: str,
+    port: int,
+    method: str,
+    path: str,
+    body: str | None = None,
+    headers: dict[str, str] | None = None,
+) -> tuple[int, dict[str, object]]:
+    conn = http.client.HTTPConnection(host, port, timeout=5)
+    try:
+        conn.request(method, path, body=body, headers=headers or {})
+        resp = conn.getresponse()
+        payload = json.loads(resp.read().decode("utf-8"))
+        return resp.status, payload
+    finally:
+        conn.close()
+
+
 def _event(*, private_key: bytes, pubkey: bytes, kind: int = 1) -> dict[str, object]:
     event_id = compute_event_id(pubkey=pubkey, created_at=1, kind=kind, tags=[], content=b"hello")
     return {
@@ -40,18 +59,17 @@ def test_http_publish_stream_flow() -> None:
 
         try:
             private_key, pubkey = generate_keypair()
-            conn = http.client.HTTPConnection("127.0.0.1", http_port, timeout=5)
-            conn.request(
-                "POST",
-                "/v1/subscriptions",
+            status, sub_payload = await asyncio.to_thread(
+                _request_json,
+                host="127.0.0.1",
+                port=http_port,
+                method="POST",
+                path="/v1/subscriptions",
                 body=json.dumps({"filters": {"kinds": [1]}}),
                 headers={"Content-Type": "application/json"},
             )
-            resp = conn.getresponse()
-            sub_payload = json.loads(resp.read().decode("utf-8"))
-            assert resp.status == 200
+            assert status == 200
             sub_id = sub_payload["subscription_id"]
-            conn.close()
 
             reader, writer = await asyncio.open_connection("127.0.0.1", http_port)
             writer.write(
@@ -64,18 +82,17 @@ def test_http_publish_stream_flow() -> None:
             )
             await writer.drain()
 
-            conn = http.client.HTTPConnection("127.0.0.1", http_port, timeout=5)
-            conn.request(
-                "POST",
-                "/v1/events",
+            status, publish_payload = await asyncio.to_thread(
+                _request_json,
+                host="127.0.0.1",
+                port=http_port,
+                method="POST",
+                path="/v1/events",
                 body=json.dumps({"event": _event(private_key=private_key, pubkey=pubkey)}),
                 headers={"Content-Type": "application/json"},
             )
-            publish_resp = conn.getresponse()
-            publish_payload = json.loads(publish_resp.read().decode("utf-8"))
-            assert publish_resp.status == 200
+            assert status == 200
             assert publish_payload["accepted"] is True
-            conn.close()
 
             data = await asyncio.wait_for(reader.readuntil(b"\n\n"), timeout=5)
             assert b"event: event" in data

@@ -15,8 +15,18 @@ async def handle_message(core: RelayCore, connection_id: str, message: Mapping[s
         event = message.get("event")
         if not isinstance(event, dict):
             raise ValueError("publish event must be mapping")
-        await core.publish(connection_id, event, send)
+        buffered_events: list[Mapping[str, object]] = []
+
+        async def send_with_buffer(conn_id: str, payload: Mapping[str, object]) -> None:
+            if conn_id == connection_id and payload.get("type") == "event":
+                buffered_events.append(payload)
+                return
+            await send(conn_id, payload)
+
+        await core.publish(connection_id, event, send_with_buffer)
         await send(connection_id, {"type": "ack"})
+        for payload in buffered_events:
+            await send(connection_id, payload)
         return
     if msg_type == "subscribe":
         sub_id = message.get("sub_id")

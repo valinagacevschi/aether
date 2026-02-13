@@ -35,3 +35,4 @@ Files at the root:
 - Never ignore `__init__.py` globally; missing package init files silently break CI imports by turning packages into namespace modules.
 - In capability signing, always derive/store the issuer public key from the private key; using the private key as issuer breaks signature verification and masks caveat/capability checks.
 - For `websockets` compatibility, resolve request path from both `connection.path` and `connection.request.path` to avoid false policy-violation closes.
+- In async tests, run blocking stdlib HTTP clients (`http.client`) via `asyncio.to_thread` to prevent event-loop starvation and flaky timeouts.
